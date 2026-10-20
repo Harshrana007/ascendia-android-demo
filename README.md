@@ -62,3 +62,9 @@ An eligible unused quest can be permanently deleted after confirmation. Quests w
 ## Latest verification status
 
 Steps 5 and 5.5 source changes are committed, including a schema v2 migration and source tests. Automated tests, typecheck, lint, Expo diagnostics, EAS APK build, installed Android launch, restart and visual screenshot checks have not been run in the current environment. Do not treat this source commit as proof of a verified build.
+
+## EAS build setup
+
+The app config links to the EAS project `@gutzx007s/ascendiaapp` via `extra.eas.projectId`. The preview profile builds an internal Android APK; production builds an AAB.
+
+The current bootstrap has no committed package-manager lockfile. EAS therefore disables immutable lockfile enforcement via `EAS_NO_FROZEN_LOCKFILE=1` while initial dependencies are resolved. This is an install-stage workaround, not a reproducible dependency baseline. After dependency resolution, commit a verified `yarn.lock` (or switch fully to npm and commit `package-lock.json`), then remove the workaround and verify another cloud build.

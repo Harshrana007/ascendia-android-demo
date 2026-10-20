@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Ascendia",
-    "slug": "ascendia-android-demo",
+    "slug": "ascendiaapp",
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "ascendia",
@@ -35,6 +35,12 @@
     "experiments": {
       "typedRoutes": true
     },
-    "icon": "./assets/images/branding/ascendia-app-icon.png"
+    "icon": "./assets/images/branding/ascendia-app-icon.png",
+    "owner": "gutzx007s",
+    "extra": {
+      "eas": {
+        "projectId": "37e224d5-0ad5-4708-a1d4-c9b5f95a76d6"
+      }
+    }
   }
 }

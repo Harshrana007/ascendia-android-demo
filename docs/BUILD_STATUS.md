@@ -54,3 +54,11 @@ The compact brand exports require replacement with approved high-resolution art 
 
 ## Release gates still open
 TypeScript, ESLint, Jest, Expo configuration and dependency diagnostics, Metro, EAS profile validation, APK build/download, Android install/launch, resume/restart, SQLite migration/device tests and screenshot review have NOT been run here. Character art remains provisional for Warrior/male/Rank E only. The compact 128-pixel icon/splash exports need production-quality replacements before release.
+
+## EAS dependency-install failure 315aa933
+
+The build at commit `2cd0485ae896693d5cec39803e8930a2cc9b1036` failed during JavaScript dependency installation before Gradle started. The worker invoked Yarn 1.22.22 while `package.json` declared `npm@10.9.2`, which Yarn interpreted as an incompatible package-manager declaration.
+
+The current `main` commit `9458969d02179261dc5f3fd29fb686bedece1316` removes that mismatched declaration and adds `EAS_NO_FROZEN_LOCKFILE=1` to preview and production. `app.json` is also linked to EAS project ID `37e224d5-0ad5-4708-a1d4-c9b5f95a76d6`. This addresses the reported install-stage failure; the old build is immutable and must be replaced with a new build from current `main`.
+
+This workaround allows Yarn to resolve dependencies without a committed lockfile. It does not guarantee reproducible dependency resolution. Commit a lockfile after a successful install and restore frozen-lockfile enforcement before production release. No new EAS build has been launched by this repository edit.
