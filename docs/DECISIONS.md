@@ -1,53 +1,27 @@
 # Decisions and Open Questions
 
-## Confirmed decisions
+## Step 4 decisions
 
-1. Current delivery target is an Android-first, local-only demo, even though the broader master specification describes an iOS-first commercial product.
-2. Exactly five primary tabs: Home, Quests, Player, Adventures, Profile.
-3. Classes are identity-only with no XP bonus.
-4. Character art evolves automatically with rank.
-5. No inventory, loot, equipment slots, equippable gear, gear stats, crafting, equipment upgrades, or combat.
-6. No backend, login, cloud sync, AI, subscriptions or social services in this demo.
-7. SQLite is the intended source of truth for structured quest and reward data.
-8. The first repository code uses Expo Router, strict TypeScript and a centralized theme module.
-9. Expo SDK 57 with React Native 0.86.3 and React 19.2.3 is the initial compatibility baseline. SDK 58 was announced on 2026-10-15; its release note said Expo Go distribution would roll out later. Reevaluate before a major SDK change. See https://expo.dev/changelog/sdk-57 and https://expo.dev/changelog/sdk-58.
-10. The app identifier `com.example.ascendia` is a development placeholder, not a confirmed production package ID.
-11. The starter theme uses system serif, sans-serif and monospace fallbacks. No custom font has been bundled or license-checked.
-12. The repository uses npm scripts because the initial audit found no package manager or lockfile. Generate the lockfile in a network-enabled environment.
+1. Reuse the existing Expo SQLite `~57.0.4` package and keep SQLite as the only authoritative local data source.
+2. Use exclusive transactions for reward-critical operations, unique occurrence/reward identities and compensating correction events.
+3. Serialize app-level writes and refresh all screens from one database-backed provider snapshot.
+4. Level uses a flat 1,000 XP per level only for the demo. Rank promotion is disabled pending product-approved thresholds.
+5. Streak policy: one grace miss per week, then streak break and 10% reduction on future XP only; three successful scheduled days restore normal rewards. This requires product approval.
+6. Historical correction within 48 hours reverses XP and attribute allocations, preserves original ledger/completion rows and voids that occurrence.
+7. In-place quest type changes are refused to protect occurrence identity and history. Archive and create a replacement task instead.
+8. Local data has no cloud backup and may be removed by Android data clearing or uninstall.
 
-## Decisions requiring clarification before progression behavior is finalized
+## Approval needed
 
-### Progression
-- Exact level XP curve.
-- Exact hybrid rank requirements based on level and long-term consistency.
-- Whether the early demo uses temporary thresholds. If so, label them demo-only and keep them in a single configuration file.
-- Behavior when the XP threshold is met but an active-day or consistency gate is not.
+- Production level XP curve and rank gates.
+- Sustainable-consistency requirements per rank.
+- Grace miss, penalty and recovery interpretation.
+- Whether correcting weekly/milestone progress should void all progress in the occurrence or support finer corrections.
+- Home timezone changes around local date/week boundaries.
+- Final class/presentation/rank artwork variants.
 
-### Rewards
-- Whether quests always use difficulty XP in the demo or can have user-configured rewards. Default recommendation: use the approved difficulty table unless the product owner confirms exceptions.
-- Distribution display language. Player XP receives the award; attribute XP is separate and does not multiply player XP.
+## Repository and verification
 
-### Streaks and corrections
-- When weekly grace is consumed and whether it preserves a streak, avoids a penalty, or both.
-- The exact three-successful-day recovery rule for the 10% weakened state.
-- How retroactive correction affects the original week versus current week.
-- If the reward ledger cannot be reversed safely, disable historical correction rather than expose a broken control.
+Repository: `Harshrana007/ascendia-android-demo`. Work branch: `feature/ascendia-android-demo-foundation`. Repository visibility was reported as public in the previous audit; verify privacy before adding confidential content.
 
-### Scheduling and edits
-- Behavior when a weekly or milestone target is lowered below existing progress.
-- Behavior when scheduled days are removed after occurrences exist.
-- How home timezone changes affect future schedules and preserve historical occurrences.
-- Future cloud conflict handling remains out of scope.
-
-### Assets and visual treatment
-- Approve initial character art count and rank-to-art mapping.
-- "Hunter" in the screenshot is display copy, not a seventh class.
-- Home's "83% to Rank S" conflicts with displayed level XP and Player's next-rank label. Clarify next-level versus rank eligibility.
-- Daily Essence remains Coming Soon unless its behavior is approved.
-- Remove Inventory from the Profile reference because product rules prohibit it.
-
-## Repository and environment
-
-- The initial repository audit found no code to preserve.
-- The repo is reported as public despite the initial private-repository request. Change visibility in GitHub settings before adding confidential material.
-- The reference PNGs remain outside the Git tree until transferred unchanged through a binary upload route.
+Typecheck, lint, Jest, Metro and Android runtime/build checks remain pending because there was no local checkout with dependencies and no Android emulator tooling in this session.

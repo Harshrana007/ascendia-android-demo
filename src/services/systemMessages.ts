@@ -1,0 +1,16 @@
+export const systemMessages = {
+  questStarted: "Quest accepted. Make the next move count.",
+  questCompleted: "System Notice: Quest Cleared. Your effort has been recorded.",
+  progressRecorded: "Progress saved. Small gains count, Hunter.",
+  xpAwarded: (xp: number) => "Reward confirmed: +" + xp + " XP. The work was real.",
+  levelIncreased: (level: number) => "Level increased to " + level + ". Consistency has entered the chat.",
+  rankPromotionPending: "Rank progression detected, but the requirements still need approval.",
+  streakContinued: "Another scheduled day conquered. Keep the chain honest.",
+  milestoneReached: "Milestone achieved. The next frontier awaits.",
+  alreadyCompleted: "This occurrence has already been cleared. No duplicate rewards.",
+  invalidProgress: "Invalid progress value. The System requires a positive amount.",
+  notScheduled: "This quest is not scheduled for the current local day.",
+  databaseError: "Save failed. Your previous saved progress is unchanged. Retry when ready.",
+  databaseReady: "System Notice: Local progress loaded.",
+  resetComplete: "Local demo data reset. A new chapter begins.",
+} as const;

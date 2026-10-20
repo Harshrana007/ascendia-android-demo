@@ -1,75 +1,52 @@
 # File Structure
 
-## Actual structure after Step 2
+## Current implementation
 
 ```text
-ascendia-android-demo/
-├── .gitignore
-├── .prettierrc.json
-├── AGENTS.md
-├── ASCENDIA_DEMO_BUILD_STEPS.md
-├── CHANGELOG.md
-├── README.md
-├── app.json
-├── app/
-│   ├── _layout.tsx
-│   └── (tabs)/
-│       ├── _layout.tsx
-│       ├── index.tsx
-│       ├── quests.tsx
-│       ├── player.tsx
-│       ├── adventures.tsx
-│       └── profile.tsx
-├── assets/
-│   ├── images/
-│   │   ├── backgrounds/cosmic-home-background.webp
-│   │   └── characters/ascendia-character-hunter-initial.webp
-│   └── references/README.md
-├── docs/
-│   ├── ANDROID_BUILD.md
-│   ├── ANIMATION_SPEC.md
-│   ├── ASSET_MANIFEST.md
-│   ├── BUILD_STATUS.md
-│   ├── DATA_MODEL.md
-│   ├── DECISIONS.md
-│   ├── DESIGN_SYSTEM.md
-│   ├── FILE_STRUCTURE.md
-│   ├── FOUNDATION_AUDIT.md
-│   ├── GAME_RULES.md
-│   ├── MASTER_SPEC_REFERENCE.md
-│   ├── PRODUCT_SCOPE.md
-│   ├── TECHNICAL_ARCHITECTURE.md
-│   ├── TEST_PLAN.md
-│   └── reference/Ascendia_Master_Specification_Updated.md
-├── src/
-│   ├── components/
-│   │   ├── icons/AscendiaIcon.tsx
-│   │   ├── navigation/PrimaryTabAppearance.ts
-│   │   ├── navigation/TabIcon.tsx
-│   │   └── visual/
-│   │       ├── AttributeBadge.tsx
-│   │       ├── CosmicBackground.tsx
-│   │       ├── GlassFantasyPanel.tsx
-│   │       ├── GradientActionButton.tsx
-│   │       ├── QuestIconTile.tsx
-│   │       ├── RankCrystal.tsx
-│   │       ├── SectionHeader.tsx
-│   │       ├── XPProgressBar.tsx
-│   │       └── index.ts
-│   ├── config/navigation.ts
-│   ├── features/foundation/FoundationRoute.tsx
-│   ├── theme/
-│   │   ├── colors.ts
-│   │   ├── designTokens.ts
-│   │   ├── index.ts
-│   │   ├── spacing.ts
-│   │   └── typography.ts
-│   └── utils/progress.ts
-├── tests/unit/progress.test.ts
-├── package.json
-├── eslint.config.js
-├── expo-env.d.ts
-└── tsconfig.json
+app/
+├── _layout.tsx
+├── index.tsx
+├── welcome.tsx
+├── onboarding.tsx
+└── (tabs)/
+    ├── _layout.tsx
+    ├── index.tsx
+    ├── quests.tsx
+    ├── player.tsx
+    ├── adventures.tsx
+    └── profile.tsx
+
+src/
+├── database/
+│   ├── database.ts
+│   └── ascendiaRepository.ts
+├── game/
+│   ├── progression/rules.ts
+│   └── streaks/policy.ts
+├── state/DemoStateProvider.tsx
+├── types/demo.ts
+├── services/
+│   ├── demoFixtures.ts
+│   ├── characterArt.ts
+│   └── systemMessages.ts
+├── components/
+│   ├── layout/DatabaseStatusScreen.tsx
+│   ├── layout/ScreenShell.tsx
+│   ├── fantasy/CharacterHero.tsx
+│   ├── quests/QuestCard.tsx
+│   ├── quests/QuestProgressModal.tsx
+│   └── visual/
+├── features/
+│   ├── onboarding/
+│   ├── home/
+│   ├── quests/
+│   ├── player/
+│   ├── adventures/
+│   └── profile/
+
+tests/unit/
+├── progressionRules.test.ts
+└── progress.test.ts
 ```
 
-Step 2 introduces visual primitives, original sample art and one pure progress helper/test. It does not implement complete screen layouts, quest data, XP transactions, a gameplay engine or a backend. Source reference PNGs remain outside Git and are recorded as an outstanding task.
+The obsolete in-memory adapter and its test were removed to avoid a competing gameplay source of truth. Expo Continuous Native Generation remains the Android workflow; the native `android/` directory is not committed.

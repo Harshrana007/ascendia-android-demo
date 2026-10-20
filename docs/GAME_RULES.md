@@ -1,17 +1,7 @@
-# Game Rules and Progression Specification
+# Gameplay Rules
 
-## Approved constants
+## Base XP
 
-### Classes
-Warrior, Ranger, Mage, Assassin, Guardian, Scholar. Classes are identity and appearance choices only.
-
-### Attributes
-Strength (STR), Endurance (END), Intelligence (INT), Discipline (DIS), Vitality (VIT), Wisdom (WIS).
-
-### Ranks
-E, D, C, B, A, S, SS, SSS.
-
-### Difficulty base XP
 | Difficulty | Base XP |
 |---|---:|
 | Very Easy | 10 |
@@ -21,34 +11,45 @@ E, D, C, B, A, S, SS, SSS.
 | Epic | 100 |
 | Legendary | 200 |
 
-### Attribute distribution
-Player XP receives 100% of the configured award. The primary attribute receives 100%. Up to two distinct secondary attributes each receive 50%. Fractional half-XP rounds half-up. Attribute XP does not increase player XP a second time.
+The shared `DIFFICULTY_XP` table is the source of truth. The UI does not calculate rewards.
 
-## Quest types
+## Attribute distribution
 
-- Daily: one rewarded completion for each scheduled local day. Unscheduled days are not misses.
-- Weekly: manual progress toward a measurable target within the configured week. Award once for the valid weekly occurrence when the target is reached.
-- One-Time: single completion, optional deadline, overdue tasks remain completable.
-- Milestone: cumulative measurable target with one reward when the target is reached. Partial progress does not earn the full reward.
+Player XP receives 100% of actual awarded XP. The primary attribute receives 100%; each of up to two distinct secondary attributes receives 50%, rounded half-up. A primary cannot also be secondary. Attribute balances do not multiply player XP. If the provisional penalty is active, XP is adjusted first and attribute allocations use that actual award.
 
-Editing affects future behavior and preserves historical completions and rewards. Archiving removes a quest from active use without corrupting history.
+## Levels and ranks
 
-## Rank progression
+- The demo uses a flat 1,000 XP per level. This is not approved production balancing.
+- Ranks are E, D, C, B, A, S, SS and SSS.
+- Rank promotion is disabled until numerical level and sustained-consistency requirements are approved.
+- The schema includes promotion history for future use, but no promotions are written in this demo.
 
-The specification calls for a hybrid of level and sustained consistency requirements, with promotion aimed at a long-term journey. Exact numerical rank thresholds are not approved. Keep values in central configuration and label any temporary local-demo values as demo-only in the UI and docs. Do not bake provisional thresholds into screen components.
+## Quest occurrence rules
 
-## Streaks, grace and weakened state
+- Daily: one occurrence for each selected weekday in the confirmed home timezone. Unscheduled days are not misses.
+- Weekly: one measurable target per configured week. The current period retains its original timezone and period if week-start settings change mid-period.
+- One-Time: one lifetime occurrence with an optional deadline. Overdue tasks remain completable for full configured XP.
+- Milestone: one lifetime numeric target. Partial progress earns no full target reward.
+- Daily and One-Time use direct completion; Weekly and Milestone use positive numeric progress and award only at the target.
+- Editing creates a revision snapshot. Past completions use the snapshot that existed at the occurrence.
+- Quest type changes are refused because they would reinterpret occurrence history. Archive and create a replacement instead.
+- Archiving removes a quest from active use but preserves history.
 
-The master specification describes scheduled-occurrence streaks, one weekly grace miss, a possible 10% reduction to future XP, and recovery after three successful days. The exact interpretation of grace consumption, recovery counting, time boundaries and retroactive corrections needs explicit decisions before implementing the penalties. Never apply hidden deductions.
+## Duplicate rewards and transactions
 
-## Historical correction window
+Completion and reward writes are grouped in a single exclusive transaction. The reward ledger has a unique reward key for an occurrence, and SQLite allows one valid completion per occurrence. Retries and double taps cannot award the same occurrence twice.
 
-Genuine completions can be corrected within 48 hours. A correction must reconcile completion state, player XP, attribute XP, streaks, penalties, and related weekly or milestone progress without duplicate rewards. If safe reversible accounting is not implemented, disable the correction action rather than expose a broken control.
+## Provisional streak policy requiring approval
 
-## Time and occurrence rules
+1. A successful scheduled day means every active Daily quest scheduled for that local day is complete.
+2. Days with no scheduled Daily occurrences are ignored.
+3. The first missed scheduled day per configured week consumes grace and preserves the chain, but does not count as a recovery success.
+4. A further miss in the same week breaks the streak and activates a 10% reduction on future XP rewards only. XP already earned is not silently deducted.
+5. Three successful scheduled days end the penalty.
+6. The policy is configurable and provisional. It requires product approval before production.
 
-- Confirm and save the user's home timezone as an IANA identifier.
-- Do not silently change the home timezone during travel.
-- Monday is the default week start, with a preference to configure it.
-- Historical occurrences keep their original schedule interpretation.
-- Test local date boundaries, daylight saving, travel, schedule edits, restarts and offline records.
+## Timezone and corrections
+
+The profile stores an IANA home timezone and a Monday-default week start, with Sunday also supported. Device timezone changes do not silently overwrite the home timezone. Each occurrence retains its timezone and period interpretation.
+
+A valid completion can be corrected within 48 hours. Correction invalidates the completion and associated progress entries, appends a compensating reward reversal, restores player and attribute balances, recalculates streak state, and voids the affected occurrence so it cannot earn a second reward. Original records remain visible. Repeated, future-dated or out-of-window corrections are rejected.

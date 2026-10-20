@@ -1,10 +1,13 @@
 import { Redirect, Tabs } from "expo-router";
+import { DatabaseStatusScreen } from "@/components/layout/DatabaseStatusScreen";
 import { TabIcon } from "@/components/navigation/TabIcon";
 import { primaryTabAppearance } from "@/components/navigation/PrimaryTabAppearance";
 import { primaryDestinations } from "@/config/navigation";
 import { useDemoState } from "@/state/DemoStateProvider";
 export default function PrimaryTabsLayout() {
-  const { state } = useDemoState();
+  const { state, status, errorMessage, retryInitialization } = useDemoState();
+  if (status === "loading") return <DatabaseStatusScreen mode="loading" />;
+  if (status === "error") return <DatabaseStatusScreen mode="error" message={errorMessage} onRetry={() => { void retryInitialization(); }} />;
   if (!state.profile) return <Redirect href="/welcome" />;
   return <Tabs screenOptions={primaryTabAppearance}>
     <Tabs.Screen name="index" options={{ title: primaryDestinations[0].title, tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} focused={focused} /> }} />

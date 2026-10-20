@@ -1,20 +1,24 @@
 # Ascendia Android Demo
 
-Ascendia turns real-world discipline into an original anime-fantasy rank progression experience. Cosmic Horizon combines cinematic celestial environments, a distinct hunter identity, luminous blue and violet light, and fast everyday habit interactions.
+Ascendia turns real-world discipline into an original anime-fantasy progression experience. Cosmic Horizon combines dark celestial environments, hunter identity, luminous cyan/violet accents and fast quest interactions.
 
-## Current stage
+## Current implementation
 
-- Step 1 established Expo SDK 57, React Native, strict TypeScript and five-destination Expo Router navigation.
-- Step 2 adds centralized Cosmic Horizon design tokens, reusable visual primitives and two original compact WebP assets.
-- Screen routes remain foundation placeholders. The full five-screen UI and local quest/progression engine are not implemented yet.
+- Welcome and four-step onboarding.
+- Five destinations: Home, Quests, Player, Adventures and Profile.
+- SQLite persistence for profile, progression, six attributes, quest revisions, occurrences, measured progress, completions, rewards, preferences, streaks and achievements.
+- Quest create/edit/archive, filters, direct completion and numeric progress.
+- Transaction-protected XP awards with occurrence-level duplicate prevention.
+- Historical correction within 48 hours using a compensating reward reversal.
+- Local loading/error state and confirmed reset.
 
-## Requirements and commands
+## Important limitations
 
-- Node.js 22.13 or newer.
-- npm, Android Studio and Android SDK, plus an emulator or physical device for Android launch testing.
-- Java/JDK compatible with the Expo-generated Android Gradle Plugin for native builds.
+The level curve is a provisional 1,000 XP per level. Rank promotion is disabled until approved level and consistency thresholds are defined. Streak/grace/penalty semantics are provisional. High-resolution rank character art and dedicated backgrounds remain incomplete. This is local-only: no backend, account, cloud sync, AI, social features, subscriptions, inventory, gear or combat.
 
-Run in a network-enabled development environment:
+## Development
+
+Prerequisites: Node.js compatible with Expo SDK 57, npm, Android Studio/SDK, and an Android emulator or physical device. The previous audit machine reported Node.js 22.16.
 
 ```sh
 npm install
@@ -27,16 +31,18 @@ npm run expo:check
 npm run doctor
 ```
 
-There was no existing package manager or lockfile. Generate and commit `package-lock.json` via `npm install`. This session has not run the listed checks successfully.
+Run these in a network-enabled workspace and generate a lockfile only after dependency resolution succeeds. These checks were not run in the current session.
 
-## Visual system
+## Local data
 
-Theme tokens are under `src/theme/`. Reusable components are under `src/components/visual/`. Original SVG icons live under `src/components/icons/`. The current bundled art is compact demo material and must be replaced with high-resolution approved assets before production.
+The database is `ascendia.db` in app-private storage. Normal restarts preserve data. Profile has a confirmed local reset. There is no cloud backup; Android data clearing or uninstall may remove local records.
 
-No custom font binaries are bundled. The theme uses centralized system serif, sans-serif and monospace fallbacks.
+## Key modules
 
-## Product boundaries
+- `src/database/database.ts`: SQLite open, schema migration and reset.
+- `src/database/ascendiaRepository.ts`: quest lifecycle, occurrences, rewards, corrections and streak reconciliation.
+- `src/game/progression/rules.ts`: XP, level and rank policy.
+- `src/game/streaks/policy.ts`: scheduled-day grace/miss decision.
+- `src/state/DemoStateProvider.tsx`: shared database-backed state and serialized writes.
 
-No inventory, loot, equippable gear, equipment statistics, combat, backend, login, cloud sync, AI service, social system or subscription is part of this demo. Sample Home progress is visibly marked preview-only, not saved player data.
-
-See `AGENTS.md`, `ASCENDIA_DEMO_BUILD_STEPS.md`, and `docs/` for rules, asset provenance and validation limitations.
+See `AGENTS.md`, `ASCENDIA_DEMO_BUILD_STEPS.md` and `docs/` for product rules and validation gaps.
