@@ -1,51 +1,53 @@
 # Decisions and Open Questions
 
-## Decisions already governed by the product brief
+## Confirmed decisions
 
-1. Android-only local demo. The full master specification describes a broader iOS-first product; the current delivery target is intentionally different.
+1. Current delivery target is an Android-first, local-only demo, even though the broader master specification describes an iOS-first commercial product.
 2. Exactly five primary tabs: Home, Quests, Player, Adventures, Profile.
 3. Classes are identity-only with no XP bonus.
 4. Character art evolves automatically with rank.
 5. No inventory, loot, equipment slots, equippable gear, gear stats, crafting, equipment upgrades, or combat.
 6. No backend, login, cloud sync, AI, subscriptions or social services in this demo.
-7. SQLite is the intended source of truth for structured local quest and reward data.
-8. Persist a completion and its reward transactionally before running visual reward feedback.
-9. Supplied visuals control style, while the written rules control behavior.
-10. Never report unsupported build or test success.
+7. SQLite is the intended source of truth for structured quest and reward data.
+8. The first repository code uses Expo Router, strict TypeScript and a centralized theme module.
+9. Expo SDK 57 with React Native 0.86.3 and React 19.2.3 is the initial compatibility baseline. SDK 58 was announced on 2026-10-15; its release note said Expo Go distribution would roll out later. Reevaluate before a major SDK change. See https://expo.dev/changelog/sdk-57 and https://expo.dev/changelog/sdk-58.
+10. The app identifier `com.example.ascendia` is a development placeholder, not a confirmed production package ID.
+11. The starter theme uses system serif, sans-serif and monospace fallbacks. No custom font has been bundled or license-checked.
+12. The repository uses npm scripts because the initial audit found no package manager or lockfile. Generate the lockfile in a network-enabled environment.
 
-## Decisions requiring clarification before the affected behavior is finalized
+## Decisions requiring clarification before progression behavior is finalized
 
 ### Progression
 - Exact level XP curve.
 - Exact hybrid rank requirements based on level and long-term consistency.
-- Whether an early demo uses temporary thresholds. If so, label them demo-only and keep them in a single configuration file.
-- How a promotion requirement behaves if XP threshold is met but an active-day or consistency gate is not.
+- Whether the early demo uses temporary thresholds. If so, label them demo-only and keep them in a single configuration file.
+- Behavior when the XP threshold is met but an active-day or consistency gate is not.
 
 ### Rewards
-- Whether quests always use base XP by difficulty in the demo or whether user-configured rewards are permitted. Default recommendation for faithful implementation: use the approved difficulty table unless the master product owner confirms exceptions.
-- Exact rounding and distribution UI wording. Rule: player XP gets the award; attribute XP is separate and not additive to player XP.
+- Whether quests always use difficulty XP in the demo or can have user-configured rewards. Default recommendation: use the approved difficulty table unless the product owner confirms exceptions.
+- Distribution display language. Player XP receives the award; attribute XP is separate and does not multiply player XP.
 
 ### Streaks and corrections
-- When a weekly grace miss is consumed and whether it preserves streak, avoids penalty, or both.
-- Exact three-successful-day recovery rule for the 10% weakened state.
+- When weekly grace is consumed and whether it preserves a streak, avoids a penalty, or both.
+- The exact three-successful-day recovery rule for the 10% weakened state.
 - How retroactive correction affects the original week versus current week.
-- If the ledger cannot safely reverse/reapply derived rewards, disable historical corrections rather than show an unsafe control.
+- If the reward ledger cannot be reversed safely, disable historical correction rather than expose a broken control.
 
-### Schedule and progress editing
+### Scheduling and edits
 - Behavior when a weekly or milestone target is lowered below existing progress.
 - Behavior when scheduled days are removed after occurrences exist.
-- How home timezone changes affect future schedule generation and preserved historical occurrences.
-- How conflicting offline records would merge in a future cloud phase. Not in scope now, but the local occurrence IDs should be designed with a future stable identity.
+- How home timezone changes affect future schedules and preserve historical occurrences.
+- Future cloud conflict handling remains out of scope.
 
 ### Assets and visual treatment
-- Approve the initial character art count and grouping of ranks to visual stages.
-- Confirm whether the Hunter wording shown in the reference is character title/copy only, not a seventh class. The approved class list remains unchanged.
-- The Home reference's "83% to Rank S" wording conflicts with its level XP numbers and with the Player reference's "Next Rank: Reach Level 50". Clarify whether the Home percentage means next level or rank eligibility; do not conflate these progress measures.
-- Daily Essence appears in a visual reference but lacks fully specified demo behavior. Keep Coming Soon unless a working behavior is approved.
+- Approve initial character art count and rank-to-art mapping.
+- "Hunter" in the screenshot is display copy, not a seventh class.
+- Home's "83% to Rank S" conflicts with displayed level XP and Player's next-rank label. Clarify next-level versus rank eligibility.
+- Daily Essence remains Coming Soon unless its behavior is approved.
 - Remove Inventory from the Profile reference because product rules prohibit it.
 
 ## Repository and environment
 
-- At audit the repo was empty. The current codebase must be created only after user approval of the next step.
-- Repository visibility is currently returned as public, despite the initial request for private. The current GitHub actions do not expose a visibility change. Make the repo private in GitHub settings before placing confidential material in it.
-- The PNG source files are present in the current session but are not tracked in Git yet. Copy them byte-for-byte to canonical paths before Step 0 is marked complete.
+- The initial repository audit found no code to preserve.
+- The repo is reported as public despite the initial private-repository request. Change visibility in GitHub settings before adding confidential material.
+- The reference PNGs remain outside the Git tree until transferred unchanged through a binary upload route.

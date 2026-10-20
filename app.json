@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Ascendia",
+    "slug": "ascendia-android-demo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "ascendia",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.example.ascendia",
+      "softwareKeyboardLayoutMode": "resize",
+      "predictiveBackGestureEnabled": true,
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      ["expo-splash-screen", {"backgroundColor": "#080D20"}]
+    ],
+    "experiments": {"typedRoutes": true}
+  }
+}

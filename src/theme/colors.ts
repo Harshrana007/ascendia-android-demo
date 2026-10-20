@@ -1,0 +1,18 @@
+export const colors = {
+  midnightNavy: "#080D20",
+  deepCosmicBlue: "#101B38",
+  electricSapphire: "#428BFF",
+  celestialCyan: "#75D9FF",
+  arcaneViolet: "#8765F5",
+  luminousLavender: "#B7A0FF",
+  paleStarlight: "#E8F1FF",
+  mutedSilver: "#A7B5D0",
+  restrainedGold: "#E9C77A",
+  panel: "rgba(10, 18, 42, 0.92)",
+  panelBorder: "rgba(117, 217, 255, 0.48)",
+  divider: "rgba(167, 181, 208, 0.2)",
+  success: "#43D9D0",
+  error: "#FF6E91",
+  disabled: "#5E6A84",
+  transparent: "transparent",
+} as const;

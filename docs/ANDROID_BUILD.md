@@ -1,41 +1,55 @@
 # Android Build and Development Guide
 
-## Current status
+## Configured baseline
 
-No application package or native project exists in the repository at the foundation audit. Therefore there are no verified Node.js, Expo SDK, React Native, Java, Android SDK, emulator, install, launch, test or build commands yet. Choose and document versions after the actual coding workspace and compatibility matrix are inspected.
+- Expo SDK `~57.0.21`.
+- React Native `0.86.3`.
+- React `19.2.3`.
+- Node.js `22.13.x` or newer per SDK 57 documentation.
+- npm scripts.
+- Expo Router.
+- App identifier `com.example.ascendia`, a development placeholder to confirm before release.
+- Portrait orientation, dark UI and Android edge-to-edge configuration.
 
-## Planned workflow
+Official references: https://docs.expo.dev/versions/v57.0.0/ and https://expo.dev/changelog/sdk-57.
 
-1. Inspect local Node.js, package managers, Java, Android SDK, Android Studio and device availability.
-2. Choose the compatible Expo SDK and maintain the existing lockfile if a project is imported later.
-3. Set up React Native with TypeScript. Do not put the app inside a WebView.
-4. Use Expo Router if an appropriate foundation is needed, or retain a stable existing navigation solution.
-5. Verify dependencies against the chosen SDK before adding native modules.
-6. Keep Android as the tested target for this demo.
-7. Document whether native Android files are committed or generated with Expo Continuous Native Generation.
+## Run the app
 
-## Commands to define after project bootstrap
+After package installation from a network-enabled machine:
 
-The eventual README must list the actual commands for dependency installation, Metro start, Android launch, typecheck, lint, unit tests, and an Android APK or development build. Do not publish placeholder commands as verified.
+```sh
+npm install
+npm run start
+npm run android
+```
 
-Common Expo command patterns may be appropriate after the chosen package manager and SDK are verified:
-- `npx expo start`
-- `npx expo start --android`
-- `npx expo install <compatible-package>`
+Metro starts with `npm run start`. Press `a` in Expo CLI to launch an available Android emulator. A physical Android device can use the development workflow after USB debugging is enabled.
 
-These are examples only, not evidence that the repository currently runs them.
+## Validation commands
 
-## Build prerequisites to verify
+```sh
+npm run typecheck
+npm run lint
+npm test
+npm run expo:check
+npm run doctor
+```
 
-- A Node.js version compatible with the selected Expo SDK.
-- The selected package manager.
-- Android Studio and a compatible Android SDK, emulator or a physical Android device.
-- Java/JDK where required by the selected native build path.
-- Compatible development-build setup if required native modules are not available in Expo Go.
+These commands are configured but have not successfully executed here. Generate and commit `package-lock.json` with `npm install` first.
 
-## Security and build integrity
+## Native build prerequisites
 
-- Never commit service secrets, keystores or signing credentials.
-- Do not claim an APK exists unless a real artifact is produced and verified.
-- No iOS setup or validation is part of this Android-only demo step.
-- Record actual commands and outcomes in `BUILD_STATUS.md` and final QA documentation.
+- Android Studio and a compatible Android SDK.
+- Configured emulator or physical device.
+- Java/JDK compatible with generated Gradle and Android Gradle Plugin.
+- Development build if later native modules exceed Expo Go support.
+
+The available container has Node.js 22.16 and Java 21 but no Android SDK, `adb`, emulator, or working outbound DNS to npm/GitHub. No Android launch or APK build was performed.
+
+## Native project strategy
+
+Expo Continuous Native Generation is the default unless there is a concrete reason to commit native projects. Native Android files may be generated with Expo prebuild. Do not add a hand-maintained native project during the foundation stage. iOS validation is outside this Android demo.
+
+## Configuration and safety
+
+The package identifier is temporary, not a confirmed production identifier. No unnecessary runtime permissions, credentials, signing material or production service keys are configured.

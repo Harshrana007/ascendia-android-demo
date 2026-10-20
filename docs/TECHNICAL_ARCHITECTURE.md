@@ -1,46 +1,41 @@
-# Technical Architecture Proposal
+# Technical Architecture
 
-## Status
+## Implemented foundation
 
-Proposed architecture only. The repository was empty during audit, so no framework, package manager, navigation library, database, or dependency has yet been installed or verified.
+- Expo SDK: `~57.0.21`.
+- React Native: `0.86.3`.
+- React: `19.2.3`.
+- Navigation: Expo Router `~57.0.28`, one root Stack and five primary Tabs.
+- Language: TypeScript strict mode.
+- Theme: centralized `src/theme` tokens for colors, typography, spacing, radii, layout and navigation dimensions.
+- Icons: custom SVG tab icon component using `react-native-svg`.
+- Animation preparation: React Native Reanimated `4.5.1` plus `react-native-worklets 0.10.1`. The Expo preset configures Reanimated's worklet integration; no copied Babel override has been added.
+- Local database dependency prepared: `expo-sqlite ~57.0.4`; schema and repositories are deferred to Step 4.
+- Gradient support: `expo-linear-gradient ~57.0.2`.
 
-## Target stack
+SDK 57 is the chosen initial compatibility baseline. SDK 58 was announced on 2026-10-15, and its release note said its Expo Go distribution would roll out later. Reevaluate the SDK choice when the first Android runtime is available. Official references: https://expo.dev/changelog/sdk-57 and https://expo.dev/changelog/sdk-58.
 
-- React Native with Expo and TypeScript.
-- Expo Router for file-based routing if suitable for the chosen Expo SDK; otherwise use an established React Navigation setup if there is a reason to prefer it.
-- Expo SQLite for structured durable local data.
-- AsyncStorage only for lightweight preferences that do not need transactions.
-- React Native Reanimated for purpose-driven motion, with Gesture Handler only when gestures are needed.
-- React Native SVG and Expo Linear Gradient where they add clear visual value.
-- Lottie only if a suitable original or licensed animation asset is available and compatibility is verified.
-- Existing package manager and lockfile should be preserved once discovered in the real development workspace.
+## Routing
 
-## Logical boundaries
+- `app/_layout.tsx`: root stack, status bar and safe-area provider.
+- `app/(tabs)/_layout.tsx`: shared five-tab navigation and selected states.
+- `app/(tabs)/index.tsx`: Home foundation placeholder.
+- `app/(tabs)/quests.tsx`
+- `app/(tabs)/player.tsx`
+- `app/(tabs)/adventures.tsx`
+- `app/(tabs)/profile.tsx`
 
-1. Navigation and screens: onboarding and the five primary tabs.
-2. Shared presentation components: panels, buttons, rank crystals, progress bars, quest rows, attributes, navigation and Coming Soon cards.
-3. Theme system: color, type, spacing, radii, borders, elevations and motion tokens.
-4. Domain logic: quest types, XP distribution, level progression, ranks, scheduling, streaks, penalties, corrections and achievements.
-5. Persistence: SQLite schema, versioned migrations, repositories, transactional completion and a reward ledger.
-6. Asset registry: class, presentation, rank-stage, resolution and license metadata.
-7. Test layer: pure domain unit tests, persistence integration tests where supported, and manual Android UI checks.
+Screen content is not the complete product UI. Domain logic and persistence remain outside route components.
 
-## Core state flow
+## Module boundaries
 
-User action -> validation -> domain rule calculation -> transactional SQLite write -> committed result -> view model refresh -> animation tied to the saved result.
+- `src/theme/`: central palette, typography and geometry tokens.
+- `src/components/navigation/`: tab icons and navigation appearance.
+- `src/features/foundation/`: temporary shared route scaffold.
+- `src/config/`: navigation metadata.
+- `src/components/visual/`: to be added in Step 2 for shared Cosmic Horizon primitives.
+- `src/game/` and `src/database/`: reserved for later quest/progression implementation, not placeholders.
 
-The UI must never independently compute or award XP. An animation must not be used as evidence that a transaction succeeded.
+## Validation status
 
-## Persistence rules
-
-- SQLite is the authoritative local source for profile, quest, occurrence, progress, completion and reward records.
-- Use versioned schema migrations.
-- Give each rewardable occurrence a stable idempotency key, backed by a database uniqueness rule or equivalent transactional guard.
-- Store reward amounts and the quest revision/configuration snapshot used at the time of earning.
-- Preserve history on edit or archive.
-- Seed only on fresh database initialization or explicit confirmed reset.
-- Keep core quest behavior functional without network connectivity.
-
-## Future services deliberately absent
-
-Do not add authentication, Supabase, Firebase, subscriptions, RevenueCat, AI APIs, analytics services, cloud sync or social systems in this local demo without a separate approved phase.
+The initial repository was empty and this work was applied using GitHub's tree/blob API. The container cannot resolve GitHub or npm hosts, and no Android SDK or emulator is available. A package lockfile cannot be generated in this session. Run `npm install` in a network-enabled workspace, commit the generated lockfile, and execute the documented checks before declaring the foundation validated.
