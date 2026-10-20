@@ -2,16 +2,16 @@
 
 ## Configured baseline
 
-- Expo SDK `~57.0.21`.
+- Expo SDK `~57.0.30`.
 - React Native `0.86.3`.
 - React `19.2.3`.
 - Node.js `22.13.x` or newer per SDK 57 documentation.
 - npm scripts.
-- Expo Router.
+- Expo Router with its SDK-matched `expo-asset`, `expo-constants`, and `expo-linking` support dependencies.
 - App identifier `com.example.ascendia`, a development placeholder to confirm before release.
 - Portrait orientation, dark UI and Android edge-to-edge configuration.
 
-Official references: https://docs.expo.dev/versions/v57.0.0/ and https://expo.dev/changelog/sdk-57.
+Official references: https://docs.expo.dev/versions/v57.0.0/ and https://docs.expo.dev/router/installation/.
 
 ## Run the app
 
