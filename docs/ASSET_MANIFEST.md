@@ -11,6 +11,15 @@ The original generated source images were available as `/mnt/data/epic_fantasy_s
 
 The SVG rank crest at `src/components/visual/RankCrystal.tsx` is an original inline vector, not an external asset. It is a placeholder for future detailed illustrated rank crystals.
 
+## Rejected local-only artwork experiments
+
+| Asset ID | Actual local path | Dimensions / format | Purpose | Status and reason |
+|---|---|---|---|---|
+| EXP-CHAR-01 | `/mnt/data/a_high_detail_anime_style_character_illustration_o.png` | 1312 x 1199, RGB PNG | Original hunter cutout experiment | Not integrated. The checkerboard pattern is baked into RGB pixels; there is no alpha channel, so it is not a transparent cutout. |
+| EXP-CHAR-02 | `/mnt/data/a_high_resolution_anime_style_fantasy_character_p.png` | 1312 x 1199, RGB PNG | Alternate original hunter cutout experiment | Not integrated for the same transparency issue. |
+
+These experimental images are not committed to the repository. Do not use them as transparent character layers or describe them as production-ready assets. The source paths are from the current generation workspace, not repository paths.
+
 ## Supplied source references
 
 | Asset ID | Source filename | Dimensions | Intended use | Git status |

@@ -8,6 +8,7 @@
 - Added original SVG icons for tasks and attributes.
 - Generated and committed compact original hunter artwork and cosmic Home background in WebP.
 - Added a clamped progress utility and unit tests.
+- Added explicit SDK 57 Expo Router peer dependencies after checking the official installation guidance.
 - Updated design, asset, animation, architecture, file structure, test plan, README and build status documents.
 - Runtime checks remain pending due to missing network and Android SDK access.
 
