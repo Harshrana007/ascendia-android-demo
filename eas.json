@@ -6,6 +6,7 @@
   "build": {
     "preview": {
       "distribution": "internal",
+      "yarn": "1.22.22",
       "android": {
         "buildType": "apk",
         "image": "latest"
@@ -15,6 +16,7 @@
       }
     },
     "production": {
+      "yarn": "1.22.22",
       "android": {
         "buildType": "app-bundle",
         "image": "latest"
