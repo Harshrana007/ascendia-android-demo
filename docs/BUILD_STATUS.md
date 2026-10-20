@@ -62,3 +62,11 @@ The build at commit `2cd0485ae896693d5cec39803e8930a2cc9b1036` failed during Jav
 The current `main` commit `9458969d02179261dc5f3fd29fb686bedece1316` removes that mismatched declaration and adds `EAS_NO_FROZEN_LOCKFILE=1` to preview and production. `app.json` is also linked to EAS project ID `37e224d5-0ad5-4708-a1d4-c9b5f95a76d6`. This addresses the reported install-stage failure; the old build is immutable and must be replaced with a new build from current `main`.
 
 This workaround allows Yarn to resolve dependencies without a committed lockfile. It does not guarantee reproducible dependency resolution. Commit a lockfile after a successful install and restore frozen-lockfile enforcement before production release. No new EAS build has been launched by this repository edit.
+
+## EAS resource compilation failure
+
+The build log supplied for build `315aa933-8db8-4304-ad6e-960e8a529a52` progressed through dependency installation and Metro bundling, then failed at `:app:mergeReleaseResources`. AAPT2 reported an unexpected error compiling the generated drawable from `assets/images/branding/ascendia-splash-icon.png`.
+
+Targeted source fix: replaced the launcher icon, adaptive foreground and splash PNG exports with 256 x 256, 8-bit RGBA, non-interlaced PNG files that pass image decoder validation; updated `app.json` so each Android brand surface uses its dedicated file; updated the asset and brand audit records. The log does not establish the exact underlying AAPT2 parser defect, so the correction is not considered proven until a fresh build succeeds.
+
+The supplied build used source commit `2cd0485ae896693d5cec39803e8930a2cc9b1036`. Re-run EAS against current `main` after this commit. Android resource compilation, APK download and installation remain unverified.

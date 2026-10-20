@@ -11,7 +11,7 @@
       "softwareKeyboardLayoutMode": "resize",
       "predictiveBackGestureEnabled": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/branding/ascendia-app-icon.png",
+        "foregroundImage": "./assets/images/branding/ascendia-adaptive-foreground.png",
         "backgroundColor": "#080D20"
       }
     },
@@ -21,12 +21,12 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#080D20",
-          "image": "./assets/images/branding/ascendia-app-icon.png",
+          "image": "./assets/images/branding/ascendia-splash-icon.png",
           "imageWidth": 128,
           "resizeMode": "contain",
           "dark": {
             "backgroundColor": "#080D20",
-            "image": "./assets/images/branding/ascendia-app-icon.png"
+            "image": "./assets/images/branding/ascendia-splash-icon.png"
           }
         }
       ]

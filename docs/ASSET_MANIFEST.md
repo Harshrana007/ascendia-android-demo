@@ -48,9 +48,17 @@ All asset entries must record real paths, dimensions, format, source, transparen
 
 | Asset | Path | Dimensions | Format | Purpose and status |
 |---|---|---:|---|---|
-| Launcher icon | `assets/images/branding/ascendia-app-icon.png` | 128 x 128 | PNG | Compact Ascendia crystal for demo builds. Low resolution for production store submission. |
-| Adaptive foreground | `assets/images/branding/ascendia-adaptive-foreground.png` | 128 x 128 | PNG with transparency | Matching crystal with transparent safe inset. Android mask not verified. |
-| Native splash artwork | `assets/images/branding/ascendia-splash-icon.png` | 128 x 128 | PNG with transparency | Transparent crest on navy splash background. APK rendering not verified. |
+| Launcher icon | `assets/images/branding/ascendia-app-icon.png` | 256 x 256 | PNG | Compact Ascendia crystal for demo builds. Low resolution for production store submission. |
+| Adaptive foreground | `assets/images/branding/ascendia-adaptive-foreground.png` | 256 x 256 | PNG with transparency | Matching crystal with transparent safe inset. Android mask not verified. |
+| Native splash artwork | `assets/images/branding/ascendia-splash-icon.png` | 256 x 256 | PNG with transparency | Transparent crest on navy splash background. APK rendering not verified. |
 | Welcome portrait | `assets/images/characters/ascendia-character-hunter-initial.webp` | 320 x 427 | WebP, opaque RGB | Original hunter concept, not art for every class, presentation or rank. |
 
 The compact crest exports are demo assets, not final high-resolution production artwork. Only Warrior/male/Rank E has an explicit provisional portrait mapping. Other variants use the documented class-emblem fallback.
+
+## Android AAPT2 resource remediation
+
+The three brand PNGs were regenerated as 256 x 256, 8-bit RGBA, non-interlaced PNGs and decoded successfully with an independent image decoder before commit. Expo configuration points the launcher icon, adaptive foreground and splash to their separate files. This remediates the resource reported by EAS, but only a fresh native build can confirm AAPT2 compilation.
+
+- Launcher: `assets/images/branding/ascendia-app-icon.png`
+- Adaptive foreground: `assets/images/branding/ascendia-adaptive-foreground.png`
+- Native splash: `assets/images/branding/ascendia-splash-icon.png`
