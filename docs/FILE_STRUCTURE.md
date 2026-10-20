@@ -1,6 +1,6 @@
 # File Structure
 
-## Actual structure after Step 1
+## Actual structure after Step 2
 
 ```text
 ascendia-android-demo/
@@ -21,8 +21,10 @@ ascendia-android-demo/
 │       ├── adventures.tsx
 │       └── profile.tsx
 ├── assets/
-│   └── references/
-│       └── README.md
+│   ├── images/
+│   │   ├── backgrounds/cosmic-home-background.webp
+│   │   └── characters/ascendia-character-hunter-initial.webp
+│   └── references/README.md
 ├── docs/
 │   ├── ANDROID_BUILD.md
 │   ├── ANIMATION_SPEC.md
@@ -38,24 +40,36 @@ ascendia-android-demo/
 │   ├── PRODUCT_SCOPE.md
 │   ├── TECHNICAL_ARCHITECTURE.md
 │   ├── TEST_PLAN.md
-│   └── reference/
-├── eslint.config.js
-├── expo-env.d.ts
-├── package.json
+│   └── reference/Ascendia_Master_Specification_Updated.md
 ├── src/
-│   ├── components/navigation/TabIcon.tsx
+│   ├── components/
+│   │   ├── icons/AscendiaIcon.tsx
+│   │   ├── navigation/PrimaryTabAppearance.ts
+│   │   ├── navigation/TabIcon.tsx
+│   │   └── visual/
+│   │       ├── AttributeBadge.tsx
+│   │       ├── CosmicBackground.tsx
+│   │       ├── GlassFantasyPanel.tsx
+│   │       ├── GradientActionButton.tsx
+│   │       ├── QuestIconTile.tsx
+│   │       ├── RankCrystal.tsx
+│   │       ├── SectionHeader.tsx
+│   │       ├── XPProgressBar.tsx
+│   │       └── index.ts
 │   ├── config/navigation.ts
 │   ├── features/foundation/FoundationRoute.tsx
-│   └── theme/
-│       ├── colors.ts
-│       ├── index.ts
-│       ├── spacing.ts
-│       └── typography.ts
+│   ├── theme/
+│   │   ├── colors.ts
+│   │   ├── designTokens.ts
+│   │   ├── index.ts
+│   │   ├── spacing.ts
+│   │   └── typography.ts
+│   └── utils/progress.ts
+├── tests/unit/progress.test.ts
+├── package.json
+├── eslint.config.js
+├── expo-env.d.ts
 └── tsconfig.json
 ```
 
-## Later structure
-
-Step 2 adds visual primitives and approved app assets. Step 3 adds screen-specific UI. Database schema, migrations, repositories and progression modules are introduced only when implementing the working quest engine. Do not create empty directories just to imitate the target tree.
-
-The reference PNGs are still absent from the remote Git tree. The asset manifest and `assets/references/README.md` record this unresolved binary transfer blocker.
+Step 2 introduces visual primitives, original sample art and one pure progress helper/test. It does not implement complete screen layouts, quest data, XP transactions, a gameplay engine or a backend. Source reference PNGs remain outside Git and are recorded as an outstanding task.

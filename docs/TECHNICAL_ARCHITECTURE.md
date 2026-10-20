@@ -1,41 +1,44 @@
 # Technical Architecture
 
-## Implemented foundation
+## Foundation baseline
 
-- Expo SDK: `~57.0.21`.
-- React Native: `0.86.3`.
-- React: `19.2.3`.
-- Navigation: Expo Router `~57.0.28`, one root Stack and five primary Tabs.
-- Language: TypeScript strict mode.
-- Theme: centralized `src/theme` tokens for colors, typography, spacing, radii, layout and navigation dimensions.
-- Icons: custom SVG tab icon component using `react-native-svg`.
-- Animation preparation: React Native Reanimated `4.5.1` plus `react-native-worklets 0.10.1`. The Expo preset configures Reanimated's worklet integration; no copied Babel override has been added.
-- Local database dependency prepared: `expo-sqlite ~57.0.4`; schema and repositories are deferred to Step 4.
-- Gradient support: `expo-linear-gradient ~57.0.2`.
+- Expo SDK `~57.0.21`.
+- React Native `0.86.3`.
+- React `19.2.3`.
+- Expo Router `~57.0.28`, root Stack and five primary Tabs.
+- TypeScript strict mode.
+- Prepared local database dependency: `expo-sqlite ~57.0.4`, implementation deferred to Step 4.
+- Motion preparation: Reanimated `4.5.1` with Worklets `0.10.1`.
+- SVG: `react-native-svg 15.15.4`.
+- Gradients: `expo-linear-gradient ~57.0.2`.
 
-SDK 57 is the chosen initial compatibility baseline. SDK 58 was announced on 2026-10-15, and its release note said its Expo Go distribution would roll out later. Reevaluate the SDK choice when the first Android runtime is available. Official references: https://expo.dev/changelog/sdk-57 and https://expo.dev/changelog/sdk-58.
+SDK 57 is the initial compatibility baseline. SDK 58 was announced on 2026-10-15, but its Expo Go rollout was not yet complete when this choice was made. References: https://expo.dev/changelog/sdk-57 and https://expo.dev/changelog/sdk-58.
 
-## Routing
+## Step 2 presentation modules
 
-- `app/_layout.tsx`: root stack, status bar and safe-area provider.
-- `app/(tabs)/_layout.tsx`: shared five-tab navigation and selected states.
-- `app/(tabs)/index.tsx`: Home foundation placeholder.
-- `app/(tabs)/quests.tsx`
-- `app/(tabs)/player.tsx`
-- `app/(tabs)/adventures.tsx`
-- `app/(tabs)/profile.tsx`
+- `src/theme/colors.ts`: semantic backgrounds, surfaces, text, feedback and focus.
+- `src/theme/typography.ts`: shared type scale and typed text styles.
+- `src/theme/spacing.ts`: spacing, radii and layout dimensions.
+- `src/theme/designTokens.ts`: gradients, border variants, elevation, glow, motion durations, rank and attribute accents.
+- `src/components/visual/CosmicBackground.tsx`: optional image with controlled overlay and dark fallback.
+- `src/components/visual/GlassFantasyPanel.tsx`: layered surface with thin luminous border.
+- `src/components/visual/GradientActionButton.tsx`: real action with disabled and loading states.
+- `src/components/visual/XPProgressBar.tsx`: accessible clamped display only.
+- `src/components/visual/RankCrystal.tsx`: configurable original SVG rank marker.
+- `src/components/visual/AttributeBadge.tsx`: attribute code and value styling.
+- `src/components/visual/QuestIconTile.tsx`: icon category and completion styling.
+- `src/components/visual/SectionHeader.tsx`: title, subtitle and optional real action.
+- `src/components/icons/AscendiaIcon.tsx`: original SVG icon family.
+- `src/components/navigation/PrimaryTabAppearance.ts`: shared tab-bar styling.
 
-Screen content is not the complete product UI. Domain logic and persistence remain outside route components.
+## State and behavior boundaries
 
-## Module boundaries
+Route components compose presentation primitives. The XP bar displays supplied values and never awards XP. RankCrystal receives an explicit rank. Attribute colors affect appearance only. The future behavior flow remains: user action -> validation -> domain calculation -> transactional SQLite write -> committed result -> view refresh -> earned animation.
 
-- `src/theme/`: central palette, typography and geometry tokens.
-- `src/components/navigation/`: tab icons and navigation appearance.
-- `src/features/foundation/`: temporary shared route scaffold.
-- `src/config/`: navigation metadata.
-- `src/components/visual/`: to be added in Step 2 for shared Cosmic Horizon primitives.
-- `src/game/` and `src/database/`: reserved for later quest/progression implementation, not placeholders.
+## Asset handling
 
-## Validation status
+Two original compact WebP demo assets are committed under `assets/images/`. The supplied reference PNGs remain untracked, so comparison against them is incomplete. System font fallbacks are used until custom font licenses and files are approved.
 
-The initial repository was empty and this work was applied using GitHub's tree/blob API. The container cannot resolve GitHub or npm hosts, and no Android SDK or emulator is available. A package lockfile cannot be generated in this session. Run `npm install` in a network-enabled workspace, commit the generated lockfile, and execute the documented checks before declaring the foundation validated.
+## Validation limitation
+
+No dependency installation, lockfile generation, typecheck, lint, Jest run, Metro render or Android screenshot has run in this session. See `docs/BUILD_STATUS.md`.

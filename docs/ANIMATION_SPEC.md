@@ -1,46 +1,33 @@
 # Animation and Welcome Experience
 
-## Intent
+## Purpose and tone
 
-The app should feel like an original anime-fantasy progression experience. The dramatic language is welcome for earned promotions, but the primary job remains recording real-world habits quickly. Use original narrative copy and light humor where appropriate; never copy quotes or dialogue from existing anime.
+Make earned progress feel like an anime-fantasy rank advancement without slowing everyday habit entry. Use original hunter and dungeon language sparingly. Suitable original examples include "Quest cleared. Progress secured." and "Rank ascended. Earned through consistency." Do not copy quotations or dialogue from existing anime.
 
-Possible original copy:
-- Welcome: "Your next evolution begins today."
-- Quest completion: "Quest cleared. Progress secured."
-- Level-up: "Level up. The work is becoming you."
-- Rank promotion: "Rank ascended. Earned through consistency."
-- Missed habit recovery: "Reset your focus. Your journey continues."
+## Ready-to-animate primitives
 
-These are optional original examples, not approved final copy. Keep ordinary UI copy literal and clear.
+Theme tokens expose quick, standard and ceremonial durations. RankCrystal is parameterized by rank and size. XPProgressBar exposes a clamped ratio and accessible value. QuestIconTile accepts a completion state. GradientActionButton exposes pressed, disabled and loading states. CosmicBackground accepts an image source and overlay strength.
 
-## Welcome sequence
+These are static presentation primitives in Step 2. Complex animation is deferred.
 
-1. Load the cosmic environment without an unnecessary fixed delay.
-2. Reveal a restrained number of stars or energy accents.
-3. Introduce the ASCENDIA wordmark.
-4. Reveal the rank crystal or energy ring.
-5. Transition to onboarding on first launch or Home when a valid local profile already exists.
+## Welcome sequence direction
 
-The screen must not pretend that a server connection is occurring. If initialization is complete, skip the loading display rather than delaying the user for drama.
+1. Reveal the cosmic environment without a fixed delay.
+2. Introduce a small number of subtle star or energy accents.
+3. Reveal the ASCENDIA wordmark using the approved display typography.
+4. Bring in the rank insignia with controlled blue and violet light.
+5. Transition to onboarding for a new profile, or Home if a saved local profile exists.
 
-## Progression motion
+Possible original copy: "Welcome, Hunter.", "Your next chapter begins here.", and "System Notice: Your journey is ready." These are copy directions, not final approved UI strings. Do not imply a server connection or wait for drama if initialization has finished.
 
-- Short screen entrance and tab selection transitions.
-- Responsive button press feedback.
-- XP bar fill after a reward transaction is confirmed.
-- Brief earned XP feedback.
-- Quest completion and checkmark transition.
-- Attribute updates tied to the persisted result.
-- Dismissible level-up overlay when a level genuinely changes.
-- Rank-promotion ceremony when the configured requirements are met.
-- Automatic character illustration transition based on selected identity and saved rank.
+## Earned progression motion
 
-Do not delay persistence until animations finish. Repeated taps must not trigger duplicate transactions or repeated earned rewards.
+Press feedback, small navigation transitions, saved XP bar fills, reward feedback after transaction success, quest completion checkmark, attribute updates, dismissible level-up overlay, promotion ceremony when requirements are met, and character image transition after saved rank change.
+
+Persist first and animate second. Repeated taps must not duplicate transactions or rewards.
 
 ## Accessibility and performance
 
-- Respect reduced-motion preference where possible.
-- Keep animations short, interruptible and skippable where appropriate.
-- Avoid full-screen constant particles, large permanent glows and effects that impair scrolling or text contrast.
-- Use Reanimated for state-driven motion. Use Lottie only for a suitable original or licensed asset when justified.
-- Test on a real Android device when possible and report unavailable testing honestly.
+Respect reduced motion where possible. Keep effects interruptible and short. Avoid full-screen continuous particles and heavy glow loops. Do not use animation as evidence of a successful save. Validate animation smoothness on Android once a device or emulator is available.
+
+The welcome animation and earned progression ceremonies are not implemented in Step 2.
