@@ -46,3 +46,9 @@ The database is `ascendia.db` in app-private storage. Normal restarts preserve d
 - `src/state/DemoStateProvider.tsx`: shared database-backed state and serialized writes.
 
 See `AGENTS.md`, `ASCENDIA_DEMO_BUILD_STEPS.md` and `docs/` for product rules and validation gaps.
+
+## First-run guest identity
+
+A fresh local database opens the branded welcome screen and asks the player to choose a callsign, class and presentation. The callsign is a local display label, not a unique account. The profile is created through the existing SQLite repository only after validation succeeds. Starter quests are opt-in and begin with no completion history, reward ledger entries, XP or achievements.
+
+The demo does not create cloud accounts or synchronize guest data. Android data clearing or uninstalling may remove the local profile.

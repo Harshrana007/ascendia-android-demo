@@ -2,6 +2,7 @@ import type { SQLiteDatabase } from "expo-sqlite";
 import type { AscendiaDatabase } from "@/database/database";
 import { resetDatabaseContents } from "@/database/database";
 import { DIFFICULTY_XP, QUEST_TEMPLATES, createEmptyAttributeXp } from "@/services/demoFixtures";
+import { normalizeGuestName } from "@/services/guestIdentity";
 import { calculateLevel, calculateReward, nextLocalDate, startOfWeek, STREAK_POLICY } from "@/game/progression/rules";
 import { resolveScheduledDayOutcome } from "@/game/streaks/policy";
 import type { Achievement, AdapterResult, AttributeCode, CompletionSummary, DemoState, HunterRank, OnboardingInput, PlayerProfile, Quest, QuestDraft, QuestType, RewardEvent, WeekStart } from "@/types/demo";
@@ -397,7 +398,7 @@ export async function readDemoState(db: AscendiaDatabase, now = new Date()): Pro
   return { profile, quests, rewardLedger, history, achievements };
 }
 export async function saveOnboarding(db: AscendiaDatabase, input: OnboardingInput, selectedKeys: string[], now = new Date()) {
-  if (input.name.trim().length < 2) throw new Error("Enter at least two characters for the hunter name.");
+  const normalizedName = normalizeGuestName(input.name);
   try { new Intl.DateTimeFormat("en-US", { timeZone: input.homeTimezone }).format(now); } catch { throw new Error("Enter a valid IANA home timezone."); }
   await db.withExclusiveTransactionAsync(async (tx) => {
     const existing = await getProfileRow(tx);
@@ -408,7 +409,7 @@ export async function saveOnboarding(db: AscendiaDatabase, input: OnboardingInpu
     const date = localDateAt(now, zone);
     await tx.runAsync(
       "INSERT INTO player_profile(id, name, class_name, presentation, interests_json, home_timezone, week_start, notifications_enabled, reduced_motion, onboarding_complete, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 1, ?, ?)",
-      id, input.name.trim(), input.className, input.presentation, JSON.stringify(input.interests), zone, input.weekStart, timestamp, timestamp);
+      id, normalizedName, input.className, input.presentation, JSON.stringify(input.interests), zone, input.weekStart, timestamp, timestamp);
     const level = calculateLevel(0);
     await tx.runAsync("INSERT INTO player_progression(player_id, total_xp, level, rank, xp_into_level, xp_to_next_level, daily_streak, best_streak) VALUES (?, 0, ?, 'E', ?, ?, 0, 0)", id, level.level, level.xpIntoLevel, level.xpToNextLevel);
     for (const code of attributeCodes) await tx.runAsync("INSERT INTO player_attributes(player_id, code, xp) VALUES (?, ?, 0)", id, code);
@@ -545,8 +546,7 @@ export async function updatePlayerProfile(db: AscendiaDatabase, patch: Partial<P
   await db.withExclusiveTransactionAsync(async (tx) => {
     const profile = await getProfileRow(tx);
     if (!profile) throw new Error("Create your hunter profile first.");
-    const name = patch.name?.trim() ?? profile.name;
-    if (name.length < 2) throw new Error("Use at least two characters for the hunter name.");
+    const name = patch.name === undefined ? profile.name : normalizeGuestName(patch.name);
     const timezone = patch.homeTimezone?.trim() ?? profile.home_timezone;
     try { new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(now); } catch { throw new Error("Enter a valid IANA home timezone."); }
     const weekStart = patch.weekStart ?? profile.week_start;

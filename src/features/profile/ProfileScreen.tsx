@@ -7,6 +7,7 @@ import { GlassFantasyPanel } from "@/components/visual/GlassFantasyPanel";
 import { GradientActionButton } from "@/components/visual/GradientActionButton";
 import { useDemoState } from "@/state/DemoStateProvider";
 import { CLASS_OPTIONS } from "@/services/demoFixtures";
+import { clampGuestName, validateGuestName, GUEST_NAME_MAX_CODE_POINTS } from "@/services/guestIdentity";
 import type { CharacterClass, CharacterPresentation, WeekStart } from "@/types/demo";
 import { colors, radii, spacing, textStyles, typography } from "@/theme";
 const profileBackground = require("../../../assets/images/backgrounds/cosmic-home-background.webp");
@@ -25,10 +26,11 @@ export function ProfileScreen() {
 
   async function save() {
     if (saving) return;
-    if (name.trim().length < 2) { Alert.alert("Name too short", "Use at least two characters for your hunter name."); return; }
+    const callsign = validateGuestName(name);
+    if (!callsign.valid) { Alert.alert("Hunter callsign required", callsign.message); return; }
     if (!validTimezone(timezone.trim())) { Alert.alert("Valid timezone required", "Enter an IANA timezone such as Asia/Kolkata."); return; }
     setSaving(true);
-    try { await updateProfile({ name: name.trim(), homeTimezone: timezone.trim(), weekStart }); Alert.alert("Profile saved", "Your local hunter record has been updated."); }
+    try { await updateProfile({ name: callsign.value, homeTimezone: timezone.trim(), weekStart }); Alert.alert("Profile saved", "Your local hunter record has been updated."); }
     catch (error) { Alert.alert("Profile not saved", error instanceof Error ? error.message : "Your saved profile is unchanged."); }
     finally { setSaving(false); }
   }
@@ -50,7 +52,7 @@ export function ProfileScreen() {
       <CharacterHero profile={profile} compact />
       <GlassFantasyPanel tone="cyan">
         <Text style={styles.section}>Identity</Text>
-        <Text style={styles.label}>Hunter name</Text><TextInput value={name} onChangeText={setName} maxLength={32} placeholder="Hunter name" placeholderTextColor={colors.textDisabled} style={styles.input} />
+        <Text style={styles.label}>Hunter name</Text><TextInput value={name} onChangeText={(value) => setName(clampGuestName(value))} maxLength={GUEST_NAME_MAX_CODE_POINTS * 2} placeholder="Hunter name" placeholderTextColor={colors.textDisabled} style={styles.input} />
         <Text style={styles.label}>Class</Text><View style={styles.chips}>{CLASS_OPTIONS.map((item) => <Choice key={item} label={item} selected={profile.className === item} disabled={saving} onPress={() => { void changeIdentity({ className: item as CharacterClass }); }} />)}</View>
         <Text style={styles.label}>Character presentation</Text><View style={styles.chips}>{(["male", "female"] as const).map((item) => <Choice key={item} label={item === "male" ? "Male" : "Female"} selected={profile.presentation === item} disabled={saving} onPress={() => { void changeIdentity({ presentation: item as CharacterPresentation }); }} />)}</View>
         <Text style={styles.helper}>Class and presentation updates preserve XP and quest history. Missing artwork uses the class emblem fallback.</Text>

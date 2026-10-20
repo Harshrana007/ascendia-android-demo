@@ -31,3 +31,9 @@ Persist first and animate second. Repeated taps must not duplicate transactions 
 Respect reduced motion where possible. Keep effects interruptible and short. Avoid full-screen continuous particles and heavy glow loops. Do not use animation as evidence of a successful save. Validate animation smoothness on Android once a device or emulator is available.
 
 The welcome animation and earned progression ceremonies are not implemented in Step 2.
+
+## Step 5.5 welcome source implementation
+
+The welcome uses a finite sequence: hunter portrait reveal, crest and wordmark reveal, rank crystal and copy reveal, then the Begin Journey action. Skip Intro jumps to the final state. Android reduced-motion changes reveal the content without staged motion. No fake loading timer or continuous particle loop is used.
+
+The native splash is separate Expo configuration. `NativeSplashGate` releases it when local initialization is ready or exposes a recoverable error. Native splash rendering must still be checked from a preview APK. Rank promotion remains disabled pending approved progression rules.

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenShell } from "@/components/layout/ScreenShell";
 import { GlassFantasyPanel } from "@/components/visual/GlassFantasyPanel";
@@ -8,6 +8,9 @@ import { QuestIconTile } from "@/components/visual/QuestIconTile";
 import { useDemoState } from "@/state/DemoStateProvider";
 import type { CharacterClass, CharacterPresentation, WeekStart } from "@/types/demo";
 import { CLASS_OPTIONS, QUEST_TEMPLATES } from "@/services/demoFixtures";
+import { clampGuestName, validateGuestName, GUEST_NAME_MAX_CODE_POINTS } from "@/services/guestIdentity";
+import { resolveCharacterArt, getClassPrimaryAttribute } from "@/services/characterArt";
+import { AscendiaIcon } from "@/components/icons/AscendiaIcon";
 import { colors, radii, spacing, textStyles, typography } from "@/theme";
 
 const interests = [
@@ -29,15 +32,21 @@ export function OnboardingScreen() {
   const router = useRouter();
   const { finishSetup } = useDemoState();
   const [step, setStep] = useState(0);
-  const [name, setName] = useState("Astra");
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [classChosen, setClassChosen] = useState(false);
+  const [presentationChosen, setPresentationChosen] = useState(false);
   const [className, setClassName] = useState<CharacterClass>("Warrior");
   const [presentation, setPresentation] = useState<CharacterPresentation>("male");
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["Learning", "Wellness"]);
   const [timezone, setTimezone] = useState(deviceTimezone());
   const [weekStart, setWeekStart] = useState<WeekStart>("Monday");
-  const [selectedQuests, setSelectedQuests] = useState<string[]>(["read-30", "water-intake", "meditation"]);
+  const [selectedQuests, setSelectedQuests] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const selectedTemplates = useMemo(() => QUEST_TEMPLATES.filter((item) => selectedQuests.includes(item.key)), [selectedQuests]);
+  const previewArt = resolveCharacterArt({ className, presentation, rank: "E" });
+  const previewAttribute = getClassPrimaryAttribute(className);
+  const previewIcon = ({ STR: "strength", END: "endurance", INT: "intelligence", DIS: "discipline", VIT: "vitality", WIS: "wisdom" } as const)[previewAttribute];
   const steps = ["Identity", "Presentation", "Interests", "Starting quests"];
 
   function toggle(value: string, values: string[], setValues: (next: string[]) => void) {
@@ -45,35 +54,59 @@ export function OnboardingScreen() {
   }
   async function finish() {
     if (saving) return;
-    if (name.trim().length < 2) { Alert.alert("Hunter identity required", "Enter at least two characters for your name."); return; }
-    if (!isValidTimezone(timezone.trim())) { Alert.alert("Valid timezone required", "Enter an IANA timezone such as Asia/Kolkata."); return; }
+    const callsign = validateGuestName(name);
+    if (!callsign.valid) { setNameError(callsign.message); setStep(0); return; }
+    if (!classChosen) { Alert.alert("Choose your class", "Select a class to define your hunter identity."); setStep(0); return; }
+    if (!presentationChosen) { Alert.alert("Choose your presentation", "Select a presentation before continuing."); setStep(1); return; }
+    if (!isValidTimezone(timezone.trim())) { Alert.alert("Valid timezone required", "Enter an IANA timezone such as Asia/Kolkata."); setStep(2); return; }
     setSaving(true);
     try {
-      await finishSetup({ name: name.trim(), className, presentation, interests: selectedInterests, homeTimezone: timezone.trim(), weekStart }, selectedQuests);
+      await finishSetup({ name: callsign.value, className, presentation, interests: selectedInterests, homeTimezone: timezone.trim(), weekStart }, selectedQuests);
       router.replace("/(tabs)");
     } catch (error) {
-      Alert.alert("Hunter record not saved", error instanceof Error ? error.message : "The local save failed. Your progress was not created.");
+      Alert.alert("Hunter record not saved", error instanceof Error ? error.message : "The local save failed. Your form is still available to retry.");
     } finally { setSaving(false); }
+  }
+  function nextStep() {
+    if (step === 0) {
+      const callsign = validateGuestName(name);
+      if (!callsign.valid) { setNameError(callsign.message); return; }
+      if (!classChosen) { Alert.alert("Choose your class", "Select one of the six classes to continue."); return; }
+    }
+    if (step === 1 && !presentationChosen) { Alert.alert("Choose your presentation", "Select male or female presentation to continue."); return; }
+    if (step === 2 && !isValidTimezone(timezone.trim())) { Alert.alert("Valid timezone required", "Enter an IANA timezone such as Asia/Kolkata."); return; }
+    setStep((value) => Math.min(3, value + 1));
   }
 
   return (
-    <ScreenShell title="Create your hunter" eyebrow={"Onboarding / 0" + (step + 1) + " of 04"} subtitle="A few choices to make Ascendia feel like yours. You can change these later." scroll={false} showFooter={false}>
+    <ScreenShell title={step === 0 ? "Choose Your Callsign" : "Create your hunter"} eyebrow={"Onboarding / 0" + (step + 1) + " of 04"} subtitle="A few choices to make Ascendia feel like yours. You can change these later." scroll={false} showFooter={false}>
+      <Image source={require("../../../assets/images/branding/ascendia-splash-icon.png")} resizeMode="contain" accessibilityLabel="Ascendia crest" style={{ width: 42, height: 42, alignSelf: "center" }} />
       <View style={styles.stepper}>
         {steps.map((label, index) => <View key={label} style={styles.stepItem}><View style={[styles.dot, index === step && styles.dotActive, index < step && styles.dotDone]} /><Text style={[styles.stepLabel, index === step && styles.stepLabelActive]}>{label}</Text></View>)}
       </View>
       <ScrollView style={styles.scroller} contentContainerStyle={styles.form} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {step === 0 ? <>
-          <Text style={styles.sectionTitle}>What should we call you?</Text>
-          <TextInput value={name} onChangeText={setName} maxLength={32} autoCapitalize="words" placeholder="Hunter name" placeholderTextColor={colors.textDisabled} accessibilityLabel="Player name" style={styles.input} />
+          <Text style={styles.sectionTitle}>Every hunter begins with a name.</Text>
+          <TextInput value={name} onChangeText={(value) => { setName(clampGuestName(value)); setNameError(null); }} maxLength={GUEST_NAME_MAX_CODE_POINTS * 2} autoCapitalize="words" autoCorrect={false} returnKeyType="done" placeholder="Choose a callsign" placeholderTextColor={colors.textDisabled} accessibilityLabel="Guest callsign" accessibilityHint="Stored locally on this device. Up to 32 characters." onSubmitEditing={nextStep} style={styles.input} />
+          {nameError ? <Text accessibilityRole="alert" style={{ color: colors.error, fontSize: 12, lineHeight: 17 }}>{nameError}</Text> : <Text style={styles.helper}>Stored on this device only. You can change it later.</Text>}
           <Text style={styles.sectionTitle}>Choose your class</Text>
           <Text style={styles.helper}>Class is identity and appearance only. No class grants XP bonuses.</Text>
-          <View style={styles.grid}>{CLASS_OPTIONS.map((item) => <Choice key={item} title={item} detail={classDetail(item)} selected={className === item} onPress={() => setClassName(item)} />)}</View>
+          <View style={styles.grid}>{CLASS_OPTIONS.map((item) => <Choice key={item} title={item} detail={classDetail(item)} selected={classChosen && className === item} onPress={() => { setClassName(item); setClassChosen(true); }} />)}</View>
         </> : null}
         {step === 1 ? <>
           <Text style={styles.sectionTitle}>Choose your character presentation</Text>
           <Text style={styles.helper}>Missing artwork uses a class emblem instead of unrelated high-rank art.</Text>
-          <View style={styles.row}>{(["male", "female"] as const).map((item) => <Choice key={item} title={item === "male" ? "Male" : "Female"} detail="Character presentation" selected={presentation === item} onPress={() => setPresentation(item)} />)}</View>
-          <GlassFantasyPanel tone="violet"><Text style={styles.sectionTitle}>{className} / {presentation}</Text><Text style={styles.helper}>Rank E Initiate. Rank evolution art will be connected when the approved art set is available.</Text></GlassFantasyPanel>
+          <View style={styles.row}>{(["male", "female"] as const).map((item) => <Choice key={item} title={item === "male" ? "Male" : "Female"} detail="Character presentation" selected={presentationChosen && presentation === item} onPress={() => { setPresentation(item); setPresentationChosen(true); }} />)}</View>
+          <GlassFantasyPanel tone="violet">
+            <Text style={styles.sectionTitle}>{className} / {presentation}</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
+              {previewArt.source
+                ? <Image source={previewArt.source} resizeMode="cover" accessibilityLabel={presentation + " " + className + " provisional rank E concept art"} style={{ width: 94, height: 126, borderRadius: 10, borderWidth: 1, borderColor: colors.panelBorderViolet }} />
+                : <View style={{ width: 94, height: 126, alignItems: "center", justifyContent: "center", borderRadius: 10, borderWidth: 1, borderColor: colors.panelBorderViolet, backgroundColor: colors.deepCosmicBlue }}><AscendiaIcon name={previewIcon} color={colors.celestialCyan} size={42} /></View>}
+              <Text style={[styles.helper, { flex: 1 }]}>{previewArt.fallbackLabel}</Text>
+            </View>
+            <Text style={styles.helper}>Rank E Initiate. Class changes affect identity and appearance only, not XP or gameplay advantages.</Text>
+          </GlassFantasyPanel>
         </> : null}
         {step === 2 ? <>
           <Text style={styles.sectionTitle}>What would you like to grow?</Text>
@@ -103,7 +136,7 @@ export function OnboardingScreen() {
       </ScrollView>
       <View style={styles.controls}>
         {step > 0 ? <Pressable accessibilityRole="button" disabled={saving} onPress={() => setStep((value) => value - 1)} style={styles.back}><Text style={styles.backText}>Back</Text></Pressable> : null}
-        <View style={styles.primary}><GradientActionButton label={step === 3 ? "Enter Ascendia" : "Continue"} onPress={() => step === 3 ? finish() : setStep((value) => value + 1)} loading={saving} loadingLabel="Saving hunter..." disabled={saving} /></View>
+        <View style={styles.primary}><GradientActionButton label={step === 3 ? "Enter Ascendia" : "Continue"} onPress={() => step === 3 ? void finish() : nextStep()} loading={saving} loadingLabel="Saving hunter..." disabled={saving} /></View>
       </View>
     </ScreenShell>
   );

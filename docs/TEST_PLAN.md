@@ -44,3 +44,9 @@
 ## Actual execution status
 
 Not run: dependency installation/lockfile generation, TypeScript, lint, Jest, Expo diagnostics, Metro, Android launch/APK build, SQLite restart tests or Android screenshots. The repository was modified through GitHub tools, not a local installed checkout. Android SDK, adb, emulator and registry access were not available during this session.
+
+## Step 5.5 first-run cases
+
+Added unit source coverage for guest callsign normalization, Unicode code-point limits and validation. These tests are authored but not executed.
+
+In a dependency-enabled checkout, run `npm run typecheck`, `npm run lint`, `npm test`, `npm run expo:check` and `npm run doctor`. On an APK, verify fresh install, blank callsign, required class and presentation, optional quests, zero generated reward history, saved profile after restart, reset, keyboard/back handling, reduced motion, launcher icon and native splash.

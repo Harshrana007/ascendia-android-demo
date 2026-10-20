@@ -2,7 +2,7 @@
 
 ## Current stage
 
-Step 4: SQLite-backed local gameplay and progression engine.
+Step 5.5 first-run source remediation committed. Runtime verification remains pending.
 
 Source and documentation are being committed as the Step 4 implementation. This is not a verified Android build. TypeScript, lint, Jest, Metro, Android launch, restart persistence and screenshot checks were not run in this environment.
 
@@ -37,3 +37,9 @@ This session edited through GitHub repository tools rather than a local clone wi
 - Penalty event history is reconciled from occurrences rather than being an immutable remote audit service.
 - Timezone and DST behavior need device acceptance testing.
 - Production-resolution character/rank artwork and final visual screenshot comparison remain separate open work.
+
+## Step 5.5 source change status
+
+Source now includes blank guest callsign, optional starter quests, explicit class and presentation selections, shared callsign validation, character-aware preview with honest fallback, finite animated welcome with Skip Intro, and Expo icon/adaptive/splash paths with a database initialization gate.
+
+The compact brand exports require replacement with approved high-resolution art before release. Only the initial Warrior/male/Rank E character portrait is explicitly mapped. TypeScript, lint, Jest, Expo diagnostics, EAS build, Android launch, restart and screenshots remain unrun.

@@ -43,3 +43,14 @@ The original PNG files are not yet present at those paths.
 Higher-resolution Home and Player scenes; dedicated Quests, Player, Adventures and Profile environments; cleanly composited character art; detailed original rank crystals; an approved app icon and wordmark; expanded quest and attribute icons; and licensed display/body font assets.
 
 All asset entries must record real paths, dimensions, format, source, transparency, integration and quality limitations. Do not claim alpha transparency when it is absent. Never use complete reference screenshots as app screens or copy protected anime characters, logos or interfaces.
+
+## Step 5.5 brand exports
+
+| Asset | Path | Dimensions | Format | Purpose and status |
+|---|---|---:|---|---|
+| Launcher icon | `assets/images/branding/ascendia-app-icon.png` | 128 x 128 | PNG | Compact Ascendia crystal for demo builds. Low resolution for production store submission. |
+| Adaptive foreground | `assets/images/branding/ascendia-adaptive-foreground.png` | 128 x 128 | PNG with transparency | Matching crystal with transparent safe inset. Android mask not verified. |
+| Native splash artwork | `assets/images/branding/ascendia-splash-icon.png` | 128 x 128 | PNG with transparency | Transparent crest on navy splash background. APK rendering not verified. |
+| Welcome portrait | `assets/images/characters/ascendia-character-hunter-initial.webp` | 320 x 427 | WebP, opaque RGB | Original hunter concept, not art for every class, presentation or rank. |
+
+The compact crest exports are demo assets, not final high-resolution production artwork. Only Warrior/male/Rank E has an explicit provisional portrait mapping. Other variants use the documented class-emblem fallback.

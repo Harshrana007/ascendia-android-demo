@@ -10,12 +10,31 @@
       "package": "com.example.ascendia",
       "softwareKeyboardLayoutMode": "resize",
       "predictiveBackGestureEnabled": true,
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/branding/ascendia-adaptive-foreground.png",
+        "backgroundColor": "#080D20"
+      }
     },
     "plugins": [
       "expo-router",
-      ["expo-splash-screen", {"backgroundColor": "#080D20"}]
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#080D20",
+          "image": "./assets/images/branding/ascendia-splash-icon.png",
+          "imageWidth": 128,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#080D20",
+            "image": "./assets/images/branding/ascendia-splash-icon.png"
+          }
+        }
+      ]
     ],
-    "experiments": {"typedRoutes": true}
+    "experiments": {
+      "typedRoutes": true
+    },
+    "icon": "./assets/images/branding/ascendia-app-icon.png"
   }
 }
