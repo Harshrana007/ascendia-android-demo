@@ -1,59 +1,39 @@
-# Proposed Local Data Model
+# Local Data Model
 
-This is a design proposal for implementation after approval. It is not a statement that a database already exists.
+## Database initialization
 
-## Entities
+The app opens `ascendia.db` asynchronously through Expo SQLite. The schema is version 1, tracked with `PRAGMA user_version` and `schema_migrations`. Startup requests WAL mode, enables and verifies foreign keys, applies the migration transactionally, then loads saved player state. An initialization error is shown with a retry action instead of inventing sample progress.
 
-### Player profile
-- Stable profile identifier.
-- Player display name.
-- Selected class and presentation.
-- Onboarding completion.
-- Confirmed IANA home timezone.
-- Week-start preference, Monday by default.
-- Created and updated timestamps.
+## Tables
 
-### Progression
-- Player lifetime XP and current level, or deterministic derivation from saved reward events.
-- Rank state or deterministic rank eligibility based on approved configuration.
-- Six cumulative attribute XP values.
-- Streak and penalty history needed to derive current display state.
-- Achievement records for achievements supported by the demo.
+| Table | Purpose |
+|---|---|
+| `schema_migrations` | Applied schema version and timestamp. |
+| `player_profile` | One local player, identity, class/presentation, interests, home timezone, week start and preferences. |
+| `player_progression` | Lifetime player XP, rank, level fields and streak summary. Total XP is authoritative; level values derive from the central demo rule. |
+| `player_attributes` | Six attribute balances: STR, END, INT, DIS, VIT and WIS. |
+| `quests` | Current definition, type, difficulty, attributes, schedule or target, deadline, current revision and archive time. |
+| `quest_revisions` | Historical quest configuration snapshots with revision and effective local date. |
+| `quest_occurrences` | Daily date, weekly period, one-time occurrence or lifetime milestone. The occurrence key is unique. Status includes scheduled, completed, missed, archived and corrected. |
+| `progress_entries` | Positive measured additions linked to an occurrence and unit, with correction validity. |
+| `completions` | Completion time, occurrence, local date, timezone, revision and original quest snapshot. A partial unique index allows one valid completion per occurrence; corrected rows remain as history. |
+| `reward_ledger` | Unique reward key, base XP, actual XP, attribute-allocation snapshot, reason and optional reversal relationship. |
+| `streak_history` | Reconciled scheduled-day outcome, timezone, period key and grace usage. |
+| `weekly_grace_usage` | Unique player/week grace record. |
+| `penalty_state` | Current provisional penalty and recovery progress. |
+| `penalty_events` | Reconciled penalty start, miss, recovery-day and end timeline. |
+| `rank_promotions` | Reserved promotion history. No rows are written while rank gates are disabled. |
+| `achievements` | Local unlock records unique by player and achievement key. |
+| `preference_revisions` | Historical timezone and week-start snapshots. |
 
-### Quest definition and revision
-- Stable quest ID.
-- Title, description, type, difficulty.
-- Primary attribute and up to two distinct secondary attributes.
-- Schedule or measurable target.
-- Target unit when appropriate.
-- Optional deadline for one-time quests.
-- Active or archived state.
-- Revision number and created/updated timestamps.
+## Constraints and transactions
 
-### Occurrence, progress and completion
-- A stable occurrence ID for each scheduled daily or weekly quest period.
-- Local-date and timezone interpretation for scheduled occurrences.
-- Progress entries for weekly and milestone quests, including amount, unit and timestamp.
-- Completion records, completion time, occurrence key and the applicable quest revision.
+Foreign keys connect profiles, quests, occurrences, completions, rewards and history. Indexes support active-quest lookup, occurrence dates, progress and completion history. User-entered values use parameterized queries.
 
-### Reward ledger
-- Unique reward event ID and unique occurrence or milestone reward key.
-- Rewarded XP amount.
-- Attribute distribution amounts.
-- Snapshot of quest revision, difficulty, selected attributes and reward config.
-- Event timestamp and correction linkage if a valid historical correction is supported.
+Onboarding, quest create/edit/archive, completion, measured progress, XP allocation and correction use exclusive transactions. A reward key and a partial unique index for valid completion are database-level duplicate protections. Correction invalidates the original completion and progress entries, adds a compensating reward reversal, restores XP/attribute balances and reconciles streak state.
 
-## Integrity requirements
+## Reset and limitations
 
-- Quest completion and its reward effects are atomic.
-- A unique key prevents the same occurrence from awarding twice.
-- Editing a quest affects future occurrences and preserves historical snapshots.
-- Archiving hides a quest from active lists but retains history.
-- Failed writes do not partially update player XP or attributes.
-- Seeding only occurs on first initialization or confirmed reset.
-- Schema changes use versioned migrations.
-- Recompute derived progress from the authoritative event records where necessary.
+Reset is confirmed in Profile. Reversal rewards are deleted before their parent rewards, followed by dependent completions, progress, occurrences and profile records. The schema remains. There is no cloud backup, and Android data clearing or uninstall may remove local records.
 
-## Boundary
-
-No user account, social graph, cloud sync, subscription entitlement, AI history or server-side table belongs in the local demo database unless a separate approved scope is provided.
+Schema version 1 is the demo baseline. Future schema changes need a new versioned migration. Penalty event rows are rebuilt as a projection from saved occurrences; the completion and reward ledger remain the primary audit trail. Timezone travel and DST behavior need device-level validation.

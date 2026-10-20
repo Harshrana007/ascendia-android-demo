@@ -47,3 +47,10 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Local Expo SQLite database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm

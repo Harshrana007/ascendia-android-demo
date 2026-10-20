@@ -1,21 +1,13 @@
-# Android Build and Development Guide
+# Android Build and Validation
 
-## Configured baseline
+## Prerequisites
 
-- Expo SDK `~57.0.30`.
-- React Native `0.86.3`.
-- React `19.2.3`.
-- Node.js `22.13.x` or newer per SDK 57 documentation.
-- npm scripts.
-- Expo Router with its SDK-matched `expo-asset`, `expo-constants`, and `expo-linking` support dependencies.
-- App identifier `com.example.ascendia`, a development placeholder to confirm before release.
-- Portrait orientation, dark UI and Android edge-to-edge configuration.
+- Node.js compatible with Expo SDK 57. The previous environment audit reported Node.js 22.16.
+- npm, Android Studio and Android SDK/platform tools.
+- Compatible Java runtime and an Android emulator or physical Android device.
+- The repository has no verified committed package lock yet. Generate it only after successful dependency installation.
 
-Official references: https://docs.expo.dev/versions/v57.0.0/ and https://docs.expo.dev/router/installation/.
-
-## Run the app
-
-After package installation from a network-enabled machine:
+## Install and run
 
 ```sh
 npm install
@@ -23,9 +15,7 @@ npm run start
 npm run android
 ```
 
-Metro starts with `npm run start`. Press `a` in Expo CLI to launch an available Android emulator. A physical Android device can use the development workflow after USB debugging is enabled.
-
-## Validation commands
+## Code checks
 
 ```sh
 npm run typecheck
@@ -35,21 +25,21 @@ npm run expo:check
 npm run doctor
 ```
 
-These commands are configured but have not successfully executed here. Generate and commit `package-lock.json` with `npm install` first.
+Check the actual `package.json` scripts before executing.
 
-## Native build prerequisites
+## SQLite acceptance checklist
 
-- Android Studio and a compatible Android SDK.
-- Configured emulator or physical device.
-- Java/JDK compatible with generated Gradle and Android Gradle Plugin.
-- Development build if later native modules exceed Expo Go support.
+1. First launch creates the database and schema, then shows Welcome.
+2. Finish onboarding, kill/relaunch the app and verify the saved profile skips Welcome.
+3. Complete a Daily quest and verify completion, reward ledger, XP and attributes update together.
+4. Submit it twice and confirm no second reward.
+5. Add partial Weekly/Milestone progress, restart, and verify it remains.
+6. Reach a target, restart, and verify the reward remains singular.
+7. Correct a completion within 48 hours and inspect the reversal plus voided occurrence.
+8. Reject correction outside the allowed window.
+9. Reset local data, verify records are cleared and schema remains.
+10. Test timezone, week-start, midnight and daylight-saving boundaries on Android.
 
-The available container has Node.js 22.16 and Java 21 but no Android SDK, `adb`, emulator, or working outbound DNS to npm/GitHub. No Android launch or APK build was performed.
+## Current verification limits
 
-## Native project strategy
-
-Expo Continuous Native Generation is the default unless there is a concrete reason to commit native projects. Native Android files may be generated with Expo prebuild. Do not add a hand-maintained native project during the foundation stage. iOS validation is outside this Android demo.
-
-## Configuration and safety
-
-The package identifier is temporary, not a confirmed production identifier. No unnecessary runtime permissions, credentials, signing material or production service keys are configured.
+npm install, lockfile generation, typecheck, lint, Jest, Expo diagnostics, Metro, Android launch/APK build, restart persistence and screenshots were not run. The repo was edited through GitHub tools rather than a local checkout with installed dependencies. Android SDK, adb, emulator and package registry access were unavailable in this session.
