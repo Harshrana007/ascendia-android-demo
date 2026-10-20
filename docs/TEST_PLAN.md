@@ -50,3 +50,15 @@ Not run: dependency installation/lockfile generation, TypeScript, lint, Jest, Ex
 Added unit source coverage for guest callsign normalization, Unicode code-point limits and validation. These tests are authored but not executed.
 
 In a dependency-enabled checkout, run `npm run typecheck`, `npm run lint`, `npm test`, `npm run expo:check` and `npm run doctor`. On an APK, verify fresh install, blank callsign, required class and presentation, optional quests, zero generated reward history, saved profile after restart, reset, keyboard/back handling, reduced motion, launcher icon and native splash.
+
+## Step 5 adventure and draft deletion cases
+
+- Fresh schema: migration to version 2 creates the `adventure_states` table without dropping existing player or reward records.
+- Start each adventure, background/resume, force-stop/restart, and verify its current status is restored.
+- Hollow Crypt unlock requires three valid Daily completion records. Corrected completions do not count.
+- Iron Bastion unlock requires a valid Weekly completion. Partial Weekly progress is not a completion.
+- Sage's Labyrinth progress comes from actual active Milestone progress. Completion requires a valid Milestone completion.
+- Adventure complete is rejected before its configured objective is satisfied. Opening or completing an adventure never changes XP or attributes.
+- Abandon requires confirmation, preserves quests/rewards, and allows a later restart.
+- Draft deletion succeeds only when no completion, reward, progress entry or used occurrence exists. Deletion is refused for any quest with historical data; archive retains history.
+- Android foreground triggers a queued SQLite snapshot refresh and must not overwrite state from an unfinished write.

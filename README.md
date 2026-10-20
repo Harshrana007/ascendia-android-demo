@@ -52,3 +52,13 @@ See `AGENTS.md`, `ASCENDIA_DEMO_BUILD_STEPS.md` and `docs/` for product rules an
 A fresh local database opens the branded welcome screen and asks the player to choose a callsign, class and presentation. The callsign is a local display label, not a unique account. The profile is created through the existing SQLite repository only after validation succeeds. Starter quests are opt-in and begin with no completion history, reward ledger entries, XP or achievements.
 
 The demo does not create cloud accounts or synchronize guest data. Android data clearing or uninstalling may remove the local profile.
+
+## Local adventure objectives
+
+Hollow Crypt tracks three valid Daily quest completions. Iron Bastion requires a valid completed Weekly target. Sage's Labyrinth tracks an active Milestone quest and requires a valid completed Milestone for the completed state. Start, continue, abandon and completion state are saved in the local SQLite database. Adventure completion gives no XP by itself.
+
+An eligible unused quest can be permanently deleted after confirmation. Quests with completion, reward or progress history must be archived.
+
+## Latest verification status
+
+Steps 5 and 5.5 source changes are committed, including a schema v2 migration and source tests. Automated tests, typecheck, lint, Expo diagnostics, EAS APK build, installed Android launch, restart and visual screenshot checks have not been run in the current environment. Do not treat this source commit as proof of a verified build.

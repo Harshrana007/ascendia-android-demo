@@ -2,7 +2,7 @@
 
 ## Current stage
 
-Step 5.5 first-run source remediation committed. Runtime verification remains pending.
+Step 5 and Step 5.5 source remediation committed. Runtime and Android release verification remain pending.
 
 Source and documentation are being committed as the Step 4 implementation. This is not a verified Android build. TypeScript, lint, Jest, Metro, Android launch, restart persistence and screenshot checks were not run in this environment.
 
@@ -43,3 +43,14 @@ This session edited through GitHub repository tools rather than a local clone wi
 Source now includes blank guest callsign, optional starter quests, explicit class and presentation selections, shared callsign validation, character-aware preview with honest fallback, finite animated welcome with Skip Intro, and Expo icon/adaptive/splash paths with a database initialization gate.
 
 The compact brand exports require replacement with approved high-resolution art before release. Only the initial Warrior/male/Rank E character portrait is explicitly mapped. TypeScript, lint, Jest, Expo diagnostics, EAS build, Android launch, restart and screenshots remain unrun.
+
+## Step 5 source additions
+
+- SQLite schema version 2 adds the local adventure-state table with its own migration.
+- Adventures screen now has Hollow Crypt, Iron Bastion and Sage's Labyrinth with saved start/abandon/completed state and objectives derived from valid saved Daily, Weekly and Milestone completions.
+- Quest list exposes a confirmed permanent-delete path for eligible unused drafts; the repository rejects removal when protected history or progress exists.
+- DemoStateProvider refreshes the saved SQLite snapshot when Android returns to the active state, queued behind existing writes.
+- Unit source tests cover guest identity validation and pure adventure objective rules.
+
+## Release gates still open
+TypeScript, ESLint, Jest, Expo configuration and dependency diagnostics, Metro, EAS profile validation, APK build/download, Android install/launch, resume/restart, SQLite migration/device tests and screenshot review have NOT been run here. Character art remains provisional for Warrior/male/Rank E only. The compact 128-pixel icon/splash exports need production-quality replacements before release.

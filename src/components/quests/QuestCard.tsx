@@ -4,7 +4,7 @@ import { AscendiaIcon } from "@/components/icons/AscendiaIcon";
 import { QuestIconTile } from "@/components/visual/QuestIconTile";
 import { GlassFantasyPanel } from "@/components/visual/GlassFantasyPanel";
 import { colors, radii, spacing, typography } from "@/theme";
-type Props = { quest: Quest; compact?: boolean; onComplete?: () => void; onAddProgress?: () => void; onEdit?: () => void; onArchive?: () => void };
+type Props = { quest: Quest; compact?: boolean; onComplete?: () => void; onAddProgress?: () => void; onEdit?: () => void; onArchive?: () => void; onDelete?: () => void };
 function iconFor(quest: Quest) {
   const title = quest.title.toLowerCase();
   if (title.includes("read") || title.includes("book") || title.includes("study") || title.includes("language")) return "book" as const;
@@ -13,7 +13,7 @@ function iconFor(quest: Quest) {
   if (title.includes("water")) return "water" as const;
   return "habit" as const;
 }
-export function QuestCard({ quest, compact = false, onComplete, onAddProgress, onEdit, onArchive }: Props) {
+export function QuestCard({ quest, compact = false, onComplete, onAddProgress, onEdit, onArchive, onDelete }: Props) {
   const measurable = quest.type === "Weekly" || quest.type === "Milestone";
   const ratio = measurable ? Math.min(1, quest.progress / Math.max(quest.target ?? 1, 1)) : 0;
   const progressWidth = (Math.round(ratio * 100) + "%") as `${number}%`;
@@ -33,7 +33,7 @@ export function QuestCard({ quest, compact = false, onComplete, onAddProgress, o
         : quest.occurrenceVoided ? null : measurable && onAddProgress ? <Pressable accessibilityRole="button" accessibilityLabel={"Add measured progress to " + quest.title} onPress={onAddProgress} style={styles.action}><Text style={styles.actionText}>+</Text></Pressable>
         : onComplete && quest.scheduledToday !== false ? <Pressable accessibilityRole="button" accessibilityLabel={"Complete " + quest.title} onPress={onComplete} style={styles.action}><AscendiaIcon name="chevron" color={colors.celestialCyan} size={20} /></Pressable> : null}
     </View>
-    {!compact && (onEdit || onArchive) ? <View style={styles.tools}>{onEdit ? <Pressable accessibilityRole="button" onPress={onEdit} hitSlop={8} style={styles.tool}><Text style={styles.toolText}>Edit</Text></Pressable> : null}{onArchive ? <Pressable accessibilityRole="button" onPress={onArchive} hitSlop={8} style={styles.tool}><Text style={styles.toolText}>Archive</Text></Pressable> : null}</View> : null}
+    {!compact && (onEdit || onArchive || onDelete) ? <View style={styles.tools}>{onEdit ? <Pressable accessibilityRole="button" onPress={onEdit} hitSlop={8} style={styles.tool}><Text style={styles.toolText}>Edit</Text></Pressable> : null}{onArchive ? <Pressable accessibilityRole="button" onPress={onArchive} hitSlop={8} style={styles.tool}><Text style={styles.toolText}>Archive</Text></Pressable> : null}{onDelete ? <Pressable accessibilityRole="button" onPress={onDelete} hitSlop={8} style={styles.tool}><Text style={[styles.toolText, { color: colors.error }]}>Delete draft</Text></Pressable> : null}</View> : null}
   </GlassFantasyPanel>;
 }
 const styles = StyleSheet.create({

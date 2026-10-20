@@ -5,7 +5,7 @@ import { DIFFICULTY_XP, QUEST_TEMPLATES, createEmptyAttributeXp } from "@/servic
 import { normalizeGuestName } from "@/services/guestIdentity";
 import { calculateLevel, calculateReward, nextLocalDate, startOfWeek, STREAK_POLICY } from "@/game/progression/rules";
 import { resolveScheduledDayOutcome } from "@/game/streaks/policy";
-import type { Achievement, AdapterResult, AttributeCode, CompletionSummary, DemoState, HunterRank, OnboardingInput, PlayerProfile, Quest, QuestDraft, QuestType, RewardEvent, WeekStart } from "@/types/demo";
+import type { Achievement, AdapterResult, AdventureKey, AdventureState, AttributeCode, CompletionSummary, DemoState, HunterRank, OnboardingInput, PlayerProfile, Quest, QuestDraft, QuestType, RewardEvent, WeekStart } from "@/types/demo";
 
 type SqlConnection = Pick<SQLiteDatabase, "runAsync" | "getFirstAsync" | "getAllAsync" | "execAsync">;
 type ProfileRow = { id: string; name: string; class_name: PlayerProfile["className"]; presentation: PlayerProfile["presentation"]; interests_json: string; home_timezone: string; week_start: WeekStart; notifications_enabled: number; reduced_motion: number; onboarding_complete: number; created_at: string; updated_at: string };
@@ -325,7 +325,7 @@ export async function initializeRepository(db: AscendiaDatabase, now = new Date(
 export async function readDemoState(db: AscendiaDatabase, now = new Date()): Promise<DemoState> {
   await initializeRepository(db, now);
   const profileRow = await getProfileRow(db);
-  if (!profileRow) return { profile: null, quests: [], rewardLedger: [], history: [], achievements: [] };
+  if (!profileRow) return { profile: null, quests: [], rewardLedger: [], history: [], achievements: [], adventureStates: [] };
   const progress = await getProgressRow(db, profileRow.id);
   const attrRows = await db.getAllAsync<AttributeRow>("SELECT code, xp FROM player_attributes WHERE player_id = ?", profileRow.id);
   const attrXp = createEmptyAttributeXp();
@@ -395,7 +395,12 @@ export async function readDemoState(db: AscendiaDatabase, now = new Date()): Pro
   }; });
   const achievementsRows = await db.getAllAsync<{ id: string; achievement_key: string; title: string; unlocked_at: string }>("SELECT id, achievement_key, title, unlocked_at FROM achievements WHERE player_id = ? ORDER BY unlocked_at DESC", profile.id);
   const achievements: Achievement[] = achievementsRows.map((row) => ({ id: row.id, key: row.achievement_key, title: row.title, unlockedAt: row.unlocked_at }));
-  return { profile, quests, rewardLedger, history, achievements };
+  const adventureRows = await db.getAllAsync<{ adventure_key: AdventureKey; status: AdventureState["status"]; started_at: string; updated_at: string; completed_at: string | null }>(
+    "SELECT adventure_key, status, started_at, updated_at, completed_at FROM adventure_states ORDER BY adventure_key");
+  const adventureStates: AdventureState[] = adventureRows.map((row) => ({
+    key: row.adventure_key, status: row.status, startedAt: row.started_at, updatedAt: row.updated_at, completedAt: row.completed_at,
+  }));
+  return { profile, quests, rewardLedger, history, achievements, adventureStates };
 }
 export async function saveOnboarding(db: AscendiaDatabase, input: OnboardingInput, selectedKeys: string[], now = new Date()) {
   const normalizedName = normalizeGuestName(input.name);
@@ -477,6 +482,73 @@ export async function archiveQuest(db: AscendiaDatabase, questId: string, now = 
     await tx.runAsync("UPDATE quest_occurrences SET status = 'archived', updated_at = ? WHERE quest_id = ? AND local_date >= ? AND status = 'scheduled'", now.toISOString(), questId, date);
   });
 }
+export async function deleteQuest(db: AscendiaDatabase, questId: string, now = new Date()) {
+  await db.withExclusiveTransactionAsync(async (tx) => {
+    const profile = await getProfileRow(tx);
+    const quest = await getQuestRow(tx, questId);
+    if (!profile || !quest) throw new Error("This quest could not be found.");
+    if (quest.archived_at) throw new Error("Archived quests are retained as history. No deletion was performed.");
+    const completion = await tx.getFirstAsync<{ id: string }>("SELECT id FROM completions WHERE quest_id = ? LIMIT 1", questId);
+    const reward = await tx.getFirstAsync<{ id: string }>("SELECT id FROM reward_ledger WHERE quest_id = ? LIMIT 1", questId);
+    const progress = await tx.getFirstAsync<{ id: string }>("SELECT id FROM progress_entries WHERE quest_id = ? LIMIT 1", questId);
+    const usedOccurrence = await tx.getFirstAsync<{ id: string }>(
+      "SELECT id FROM quest_occurrences WHERE quest_id = ? AND (status <> 'scheduled' OR progress > 0) LIMIT 1", questId);
+    if (completion || reward || progress || usedOccurrence) {
+      throw new Error("This quest has gameplay history or progress. Archive it to preserve its records.");
+    }
+    await tx.runAsync("DELETE FROM quest_occurrences WHERE quest_id = ?", questId);
+    await tx.runAsync("DELETE FROM quest_revisions WHERE quest_id = ?", questId);
+    await tx.runAsync("DELETE FROM quests WHERE id = ?", questId);
+  });
+}
+
+const adventureQuestType: Record<AdventureKey, QuestType> = {
+  "hollow-crypt": "Daily",
+  "iron-bastion": "Weekly",
+  "sages-labyrinth": "Milestone",
+};
+async function adventureObjectiveCount(db: SqlConnection, key: AdventureKey): Promise<number> {
+  const row = await db.getFirstAsync<{ count: number }>(
+    "SELECT COUNT(*) AS count FROM completions c JOIN quest_occurrences o ON o.id = c.occurrence_id WHERE c.is_valid = 1 AND o.type = ?",
+    adventureQuestType[key],
+  );
+  return row?.count ?? 0;
+}
+export async function startAdventure(db: AscendiaDatabase, key: AdventureKey, now = new Date()) {
+  await db.withExclusiveTransactionAsync(async (tx) => {
+    const profile = await getProfileRow(tx);
+    if (!profile) throw new Error("Create your local hunter profile first.");
+    const current = await tx.getFirstAsync<{ status: AdventureState["status"] }>(
+      "SELECT status FROM adventure_states WHERE adventure_key = ?", key);
+    if (current?.status === "completed") throw new Error("This adventure is already complete.");
+    if (current?.status === "active") return;
+    if (current?.status === "abandoned") {
+      await tx.runAsync("UPDATE adventure_states SET status = 'active', started_at = ?, updated_at = ?, completed_at = NULL WHERE adventure_key = ?", now.toISOString(), now.toISOString(), key);
+    } else {
+      await tx.runAsync("INSERT INTO adventure_states(adventure_key, status, started_at, updated_at, completed_at) VALUES (?, 'active', ?, ?, NULL)", key, now.toISOString(), now.toISOString());
+    }
+  });
+}
+export async function abandonAdventure(db: AscendiaDatabase, key: AdventureKey, now = new Date()) {
+  await db.withExclusiveTransactionAsync(async (tx) => {
+    const current = await tx.getFirstAsync<{ status: AdventureState["status"] }>(
+      "SELECT status FROM adventure_states WHERE adventure_key = ?", key);
+    if (!current || current.status !== "active") throw new Error("Only an active adventure can be abandoned.");
+    await tx.runAsync("UPDATE adventure_states SET status = 'abandoned', updated_at = ? WHERE adventure_key = ?", now.toISOString(), key);
+  });
+}
+export async function completeAdventure(db: AscendiaDatabase, key: AdventureKey, now = new Date()) {
+  const required = key === "hollow-crypt" ? 3 : 1;
+  await db.withExclusiveTransactionAsync(async (tx) => {
+    const current = await tx.getFirstAsync<{ status: AdventureState["status"] }>(
+      "SELECT status FROM adventure_states WHERE adventure_key = ?", key);
+    if (!current || current.status !== "active") throw new Error("Start this adventure before completing it.");
+    const count = await adventureObjectiveCount(tx, key);
+    if (count < required) throw new Error("The configured real-world objective is not complete yet.");
+    await tx.runAsync("UPDATE adventure_states SET status = 'completed', updated_at = ?, completed_at = ? WHERE adventure_key = ?", now.toISOString(), now.toISOString(), key);
+  });
+}
+
 async function insertCurrentOccurrence(db: SqlConnection, questId: string, now: Date) {
   const profile = await getProfileRow(db); const quest = await getQuestRow(db, questId);
   if (!profile || !quest || quest.archived_at) return null;

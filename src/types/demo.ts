@@ -34,9 +34,13 @@ export type CompletionSummary = {
  canCorrect: boolean; correctionNote?: string | null;
 };
 export type Achievement = { id: string; key: string; title: string; unlockedAt: string };
+export type AdventureKey = "hollow-crypt" | "iron-bastion" | "sages-labyrinth";
+export type AdventureState = {
+ key: AdventureKey; status: "active" | "abandoned" | "completed"; startedAt: string; updatedAt: string; completedAt: string | null;
+};
 export type DemoState = {
  profile: PlayerProfile | null; quests: Quest[]; rewardLedger: RewardEvent[];
- history?: CompletionSummary[]; achievements?: Achievement[];
+ history?: CompletionSummary[]; achievements?: Achievement[]; adventureStates: AdventureState[];
 };
 export type OnboardingInput = {
  name: string; className: CharacterClass; presentation: CharacterPresentation; interests: string[];

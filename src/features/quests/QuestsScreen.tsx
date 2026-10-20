@@ -13,7 +13,7 @@ type Filter = "All" | QuestType | "Completed";
 const questsBackground = require("../../../assets/images/backgrounds/cosmic-home-background.webp");
 
 export function QuestsScreen() {
-  const { state, createQuest, editQuest, archiveQuest, complete, addProgress, correct } = useDemoState();
+  const { state, createQuest, editQuest, archiveQuest, deleteQuest, complete, addProgress, correct } = useDemoState();
   const [filter, setFilter] = useState<Filter>("All");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<Quest | undefined>();
@@ -73,6 +73,7 @@ export function QuestsScreen() {
               onAddProgress={!quest.isCompleted && (quest.type === "Weekly" || quest.type === "Milestone") ? () => setProgressQuest(quest) : undefined}
               onEdit={!quest.isArchived ? () => { setEditing(quest); setEditorOpen(true); } : undefined}
               onArchive={!quest.isArchived ? () => Alert.alert("Archive quest?", "This removes the quest from active use but preserves completion and reward history.", [{ text: "Cancel", style: "cancel" }, { text: "Archive", style: "destructive", onPress: () => { void archiveQuest(quest.id).catch((error: unknown) => Alert.alert("Archive failed", error instanceof Error ? error.message : "The quest was not archived.")); } }]) : undefined}
+              onDelete={!quest.isArchived && !quest.isCompleted && !quest.occurrenceVoided && quest.progress === 0 && !(state.history ?? []).some((record) => record.questId === quest.id) && !(state.rewardLedger ?? []).some((record) => record.questId === quest.id) ? () => Alert.alert("Delete draft quest?", "This permanently removes only a quest with no completion, progress, or reward history. Archive quests with history instead.", [{ text: "Cancel", style: "cancel" }, { text: "Delete draft", style: "destructive", onPress: () => { void deleteQuest(quest.id).then(() => Alert.alert("Draft deleted", "The unused quest was removed.")).catch((error: unknown) => Alert.alert("Draft not deleted", error instanceof Error ? error.message : "The saved quest was not changed.")); } }]) : undefined}
             />
           ))
           : <View style={styles.empty}><Text style={styles.emptyTitle}>No quests in this view</Text><Text style={styles.emptyCopy}>Every hunter starts somewhere. Add a quest when you are ready.</Text></View>}

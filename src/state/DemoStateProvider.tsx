@@ -1,7 +1,8 @@
+import { AppState } from "react-native";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { AdapterResult, DemoState, OnboardingInput, PlayerProfile, QuestDraft } from "@/types/demo";
+import type { AdapterResult, AdventureKey, DemoState, OnboardingInput, PlayerProfile, QuestDraft } from "@/types/demo";
 import { openAscendiaDatabase, type AscendiaDatabase } from "@/database/database";
-import { archiveQuest, addQuestProgress, completeQuest, correctCompletion, createQuest, editQuest, readDemoState, resetLocalDemo, saveOnboarding, updatePlayerProfile } from "@/database/ascendiaRepository";
+import { abandonAdventure, archiveQuest, addQuestProgress, completeAdventure, completeQuest, correctCompletion, createQuest, deleteQuest, editQuest, readDemoState, resetLocalDemo, saveOnboarding, startAdventure, updatePlayerProfile } from "@/database/ascendiaRepository";
 
 export type DatabaseStatus = "loading" | "ready" | "error";
 type Value = {
@@ -9,12 +10,13 @@ type Value = {
   retryInitialization: () => Promise<void>;
   finishSetup: (input: OnboardingInput, keys: string[]) => Promise<void>;
   createQuest: (draft: QuestDraft) => Promise<void>; editQuest: (id: string, draft: QuestDraft) => Promise<void>;
-  archiveQuest: (id: string) => Promise<void>; complete: (id: string) => Promise<AdapterResult>;
+  archiveQuest: (id: string) => Promise<void>; deleteQuest: (id: string) => Promise<void>; complete: (id: string) => Promise<AdapterResult>;
+  startAdventure: (key: AdventureKey) => Promise<void>; abandonAdventure: (key: AdventureKey) => Promise<void>; completeAdventure: (key: AdventureKey) => Promise<void>;
   addProgress: (id: string, amount: number) => Promise<AdapterResult>;
   correct: (completionId: string, note?: string) => Promise<void>;
   updateProfile: (patch: Partial<PlayerProfile>) => Promise<void>; resetDemo: () => Promise<void>;
 };
-const emptyState = (): DemoState => ({ profile: null, quests: [], rewardLedger: [], history: [], achievements: [] });
+const emptyState = (): DemoState => ({ profile: null, quests: [], rewardLedger: [], history: [], achievements: [], adventureStates: [] });
 const Context = createContext<Value | null>(null);
 
 export function DemoStateProvider({ children }: { children: ReactNode }) {
@@ -55,6 +57,26 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const writeQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const refreshOnResume = useCallback(async () => {
+    if (!databaseRef.current || status !== "ready") return;
+    try {
+      await refreshSnapshot();
+    } catch (error) {
+      if (mounted.current) {
+        setErrorMessage(error instanceof Error ? error.message : "Saved local data could not be refreshed after resume.");
+        setStatus("error");
+      }
+    }
+  }, [refreshSnapshot, status]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState !== "active") return;
+      const task = writeQueue.current.then(refreshOnResume, refreshOnResume);
+      writeQueue.current = task.then(() => undefined, () => undefined);
+    });
+    return () => subscription.remove();
+  }, [refreshOnResume]);
   const runWrite = useCallback(async <T,>(operation: (database: AscendiaDatabase) => Promise<T>): Promise<T> => {
     const perform = async () => {
       const database = databaseRef.current;
@@ -80,6 +102,10 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
   const create = useCallback((draft: QuestDraft) => runWrite((database) => createQuest(database, draft)), [runWrite]);
   const edit = useCallback((id: string, draft: QuestDraft) => runWrite((database) => editQuest(database, id, draft)), [runWrite]);
   const archive = useCallback((id: string) => runWrite((database) => archiveQuest(database, id)), [runWrite]);
+  const remove = useCallback((id: string) => runWrite((database) => deleteQuest(database, id)), [runWrite]);
+  const startAdventureAction = useCallback((key: AdventureKey) => runWrite((database) => startAdventure(database, key)), [runWrite]);
+  const abandonAdventureAction = useCallback((key: AdventureKey) => runWrite((database) => abandonAdventure(database, key)), [runWrite]);
+  const completeAdventureAction = useCallback((key: AdventureKey) => runWrite((database) => completeAdventure(database, key)), [runWrite]);
   const complete = useCallback((id: string) => runWrite((database) => completeQuest(database, id)), [runWrite]);
   const addProgress = useCallback((id: string, amount: number) => runWrite((database) => addQuestProgress(database, id, amount)), [runWrite]);
   const correct = useCallback((completionId: string, note?: string) => runWrite((database) => correctCompletion(database, completionId, note)), [runWrite]);
@@ -91,8 +117,9 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({
     state, status, errorMessage, retryInitialization, finishSetup, createQuest: create,
-    editQuest: edit, archiveQuest: archive, complete, addProgress, correct, updateProfile, resetDemo,
-  }), [state, status, errorMessage, retryInitialization, finishSetup, create, edit, archive, complete, addProgress, correct, updateProfile, resetDemo]);
+    editQuest: edit, archiveQuest: archive, deleteQuest: remove, complete, addProgress, correct, updateProfile, resetDemo,
+    startAdventure: startAdventureAction, abandonAdventure: abandonAdventureAction, completeAdventure: completeAdventureAction,
+  }), [state, status, errorMessage, retryInitialization, finishSetup, create, edit, archive, remove, complete, addProgress, correct, updateProfile, resetDemo, startAdventureAction, abandonAdventureAction, completeAdventureAction]);
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

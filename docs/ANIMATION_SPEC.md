@@ -37,3 +37,7 @@ The welcome animation and earned progression ceremonies are not implemented in S
 The welcome uses a finite sequence: hunter portrait reveal, crest and wordmark reveal, rank crystal and copy reveal, then the Begin Journey action. Skip Intro jumps to the final state. Android reduced-motion changes reveal the content without staged motion. No fake loading timer or continuous particle loop is used.
 
 The native splash is separate Expo configuration. `NativeSplashGate` releases it when local initialization is ready or exposes a recoverable error. Native splash rendering must still be checked from a preview APK. Rank promotion remains disabled pending approved progression rules.
+
+## Step 5 state-driven interaction notes
+
+The welcome and rank insignia animation now have finite timing with Skip Intro and reduced-motion handling. The native splash is distinct from the welcome experience. Quest and Adventure buttons remain tied to repository outcomes, not animation timers. Rank promotion and level-up ceremony are not claimed implemented because the promotion gate is still disabled and requires approved progression rules.

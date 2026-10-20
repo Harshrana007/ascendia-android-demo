@@ -2,7 +2,7 @@
 
 ## Database initialization
 
-The app opens `ascendia.db` asynchronously through Expo SQLite. The schema is version 1, tracked with `PRAGMA user_version` and `schema_migrations`. Startup requests WAL mode, enables and verifies foreign keys, applies the migration transactionally, then loads saved player state. An initialization error is shown with a retry action instead of inventing sample progress.
+The app opens `ascendia.db` asynchronously through Expo SQLite. The schema is version 2, tracked with `PRAGMA user_version` and `schema_migrations`. Startup requests WAL mode, enables and verifies foreign keys, applies the migration transactionally, then loads saved player state. An initialization error is shown with a retry action instead of inventing sample progress.
 
 ## Tables
 
@@ -25,6 +25,7 @@ The app opens `ascendia.db` asynchronously through Expo SQLite. The schema is ve
 | `rank_promotions` | Reserved promotion history. No rows are written while rank gates are disabled. |
 | `achievements` | Local unlock records unique by player and achievement key. |
 | `preference_revisions` | Historical timezone and week-start snapshots. |
+| `adventure_states` | Local single-player state for the three curated adventures, including status and timestamps. Adventure records do not create XP rewards. |
 
 ## Constraints and transactions
 
@@ -36,4 +37,8 @@ Onboarding, quest create/edit/archive, completion, measured progress, XP allocat
 
 Reset is confirmed in Profile. Reversal rewards are deleted before their parent rewards, followed by dependent completions, progress, occurrences and profile records. The schema remains. There is no cloud backup, and Android data clearing or uninstall may remove local records.
 
-Schema version 1 is the demo baseline. Future schema changes need a new versioned migration. Penalty event rows are rebuilt as a projection from saved occurrences; the completion and reward ledger remain the primary audit trail. Timezone travel and DST behavior need device-level validation.
+Schema version 2 adds `adventure_states` with a versioned migration from schema version 1. Future schema changes need another versioned migration. Penalty event rows are rebuilt as a projection from saved occurrences; the completion and reward ledger remain the primary audit trail. Timezone travel and DST behavior need device-level validation.
+
+## Adventure state semantics
+
+Adventure state is a local presentation/workflow record only. The objective projection uses valid completion history for Daily and Weekly activities and valid Milestone completions, with partial milestone progress sourced from live quest occurrences. Adventure rows are deleted during confirmed local reset. Adventure completion does not insert reward-ledger events and does not change XP or attributes.

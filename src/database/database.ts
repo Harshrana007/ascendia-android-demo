@@ -2,7 +2,7 @@ import * as SQLite from "expo-sqlite";
 
 export type AscendiaDatabase = SQLite.SQLiteDatabase;
 const DATABASE_NAME = "ascendia.db";
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 let openPromise: Promise<AscendiaDatabase> | null = null;
 
 const migrationOne = `
@@ -114,6 +114,16 @@ CREATE TABLE IF NOT EXISTS preference_revisions (
 );
 `;
 
+const migrationTwo = `
+CREATE TABLE IF NOT EXISTS adventure_states (
+ adventure_key TEXT PRIMARY KEY NOT NULL CHECK(adventure_key IN ('hollow-crypt','iron-bastion','sages-labyrinth')),
+ status TEXT NOT NULL CHECK(status IN ('active','abandoned','completed')),
+ started_at TEXT NOT NULL,
+ updated_at TEXT NOT NULL,
+ completed_at TEXT
+);
+`;
+
 export async function openAscendiaDatabase(): Promise<AscendiaDatabase> {
  if (!openPromise) {
   openPromise = (async () => {
@@ -130,6 +140,13 @@ export async function openAscendiaDatabase(): Promise<AscendiaDatabase> {
      await tx.execAsync("PRAGMA user_version = 1;");
     });
    }
+   if (currentVersion < 2) {
+    await db.withExclusiveTransactionAsync(async (tx) => {
+     await tx.execAsync(migrationTwo);
+     await tx.runAsync("INSERT OR IGNORE INTO schema_migrations(version, applied_at) VALUES (?, ?)", 2, new Date().toISOString());
+     await tx.execAsync("PRAGMA user_version = 2;");
+    });
+   }
    const fk = await db.getFirstAsync<{ foreign_keys: number }>("PRAGMA foreign_keys;");
    if (fk?.foreign_keys !== 1) throw new Error("SQLite foreign-key enforcement could not be enabled.");
    return db;
@@ -141,6 +158,7 @@ export async function openAscendiaDatabase(): Promise<AscendiaDatabase> {
 export async function resetDatabaseContents(db: AscendiaDatabase): Promise<void> {
  await db.withExclusiveTransactionAsync(async (tx) => {
   await tx.execAsync(`
+   DELETE FROM adventure_states;
    DELETE FROM reward_ledger WHERE is_reversal = 1;
    DELETE FROM reward_ledger; DELETE FROM completions; DELETE FROM progress_entries; DELETE FROM streak_history;
    DELETE FROM weekly_grace_usage; DELETE FROM penalty_events; DELETE FROM penalty_state; DELETE FROM rank_promotions;
