@@ -10,7 +10,7 @@ export const DEMO_LEVEL_RULES = {
 export const RANK_POLICY = {
   enabled: false,
   ranks: ["E", "D", "C", "B", "A", "S", "SS", "SSS"] as const,
-  thresholds: {} as Partial<Record<HunterRank, { minimumLevel: number; minimumSuccessfulScheduledDays: number }>,
+  thresholds: {} as Partial<Record<HunterRank, { minimumLevel: number; minimumSuccessfulScheduledDays: number }>>,
   requiresSustainedConsistency: true,
   productionApproved: false,
 } as const;
